@@ -1,241 +1,118 @@
-# TaskFlow
+# GreenLight — Panel Comunitario
 
-Aplicación web desarrollada para **Programación Web II – UPDS**.
+Aplicación web para el **registro y gestión de reportes comunitarios**, desarrollada para **Programación Web II – UPDS** con una **arquitectura de 5 responsabilidades** (capa de API, lógica de negocio, acceso a datos, base de datos y cliente web).
 
 ## 🛠️ Tecnologías
 
-* Python 3.14+
-* Flask
-* React
-* Vite
-* Tailwind CSS
-* Git
-* GitHub
-* Visual Studio Code
+* Backend: Node.js, Express 5, PostgreSQL (Supabase), jsonwebtoken, pg, cors, dotenv, nodemon
+* Frontend: React 19, Vite, chart.js
+* Autenticación: JWT con **API simulada** (usuarios mock)
+* Infraestructura: Git, GitHub, VS Code
 
 ---
 
-# 📁 Estructura del proyecto
+## 📁 Estructura del proyecto
 
 ```text
-taskflow/
+greenlight/
 │
-├── venv/                  # Entorno virtual de Python
-│
-├── backend/               # API Flask
-│   ├── app/
-│   │   ├── __init__.py
-│   │   └── routes.py
-│   └── requirements.txt
-│
-├── frontend/              # Aplicación React + Vite
+├── backend/                    # API Node/Express
 │   ├── src/
-│   ├── public/
+│   │   ├── app.js              # Punto de entrada + middlewares
+│   │   ├── config/db.js        # Conexión a PostgreSQL (Supabase)
+│   │   ├── controllers/        # Capa API (valida formato/HTTP) — auth, reportes
+│   │   ├── services/           # Capa de lógica de negocio
+│   │   ├── repositories/       # Capa de acceso a datos (SQL parametrizado)
+│   │   ├── routes/             # Definición de rutas REST
+│   │   ├── middleware/         # authMiddleware y requireRole
+│   │   └── data/mockUsers.js   # Usuarios de la API simulada
 │   └── package.json
 │
-├── docs/                  # Documentación del proyecto
+├── frontend/                   # Cliente React + Vite
+│   ├── src/
+│   │   ├── App.jsx             # Shell: login, header, sidebar, navegación
+│   │   ├── Reportes.jsx        # Registro y listado de reportes
+│   │   ├── Dashboard.jsx       # Panel del administrador (estadísticas)
+│   │   ├── App.css / index.css # Tema visual (estilo Alcasa)
+│   │   └── main.jsx
+│   └── package.json
 │
+├── docs/
+│   ├── schema.sql              # DDL de la tabla reporte
+│   └── TEST_CASES.md           # Casos de prueba documentados
+│
+├── .env.example
 ├── .gitignore
 └── README.md
 ```
 
-> `venv/` y `node_modules/` son directorios locales y están excluidos mediante `.gitignore`.
+> `node_modules/`, `.env` y `__pycache__/` están excluidos mediante `.gitignore`.
 
 ---
 
-# ⚙️ Requisitos
+## ⚙️ Requisitos
 
-Antes de ejecutar el proyecto se necesita:
-
-* Git 2.x o superior
-* Node.js 18.x o superior
-* Python 3.11 o superior
-* Visual Studio Code
-
-Versiones utilizadas durante la configuración:
-
-```text
-Git     2.49.0
-Node    v24.18.1
-Python  3.14.6
-```
+* Node.js 18 o superior
+* Cuenta en [Supabase](https://supabase.com) (PostgreSQL) — o un PostgreSQL local
+* Git, VS Code
 
 ---
 
-# 🚀 Configuración inicial
+## 🚀 Configuración inicial
 
-## 1. Clonar el repositorio
-
-```powershell
-git clone https://github.com/TU-USUARIO/taskflow.git
-cd taskflow
-```
-
----
-
-## 2. Activar el entorno virtual
-
-El entorno virtual `venv` se encuentra en la **raíz del proyecto**.
-
-Desde:
-
-```text
-taskflow/
-```
-
-ejecutar:
+### 1. Clonar el repositorio
 
 ```powershell
-.\venv\Scripts\Activate.ps1
+git clone https://github.com/ProWeb26/GreenLight.git
+cd GreenLight
 ```
 
-Si se activó correctamente, aparecerá:
+### 2. Base de datos (Supabase)
 
-```text
-(venv) PS C:\Users\Dell\Documents\taskflow>
-```
+1. Crea un proyecto en [Supabase](https://supabase.com).
+2. En **Connect**, copia la cadena de conexión **Session pooler**.
+3. Ejecuta `docs\schema.sql` en el **SQL Editor** de Supabase para crear la tabla `reporte`.
 
-### Verificar Python
+### 3. Variables de entorno
 
-```powershell
-python --version
-```
+Copia `backend\.env` desde `.env.example` y completa tus credenciales:
 
-También se puede comprobar qué Python se está utilizando:
-
-```powershell
-where.exe python
-```
-
-La primera ruta debería apuntar a:
-
-```text
-taskflow\venv\Scripts\python.exe
+```dotenv
+PORT=3000
+DATABASE_URL=postgresql://usuario:contraseña@host:5432/postgres
+JWT_SECRET=cambia-este-secreto
+JWT_EXPIRES_IN=2h
 ```
 
 ---
 
-# 🔧 Backend — Flask
-
-## Instalar dependencias
-
-Con el entorno virtual activado:
+## 🔧 Backend
 
 ```powershell
-pip install -r backend\requirements.txt
-```
-
-Si se está configurando el proyecto por primera vez y todavía no existe `requirements.txt`:
-
-```powershell
-pip install Flask
-```
-
-Luego:
-
-```powershell
-pip freeze > backend\requirements.txt
-```
-
----
-
-## Ejecutar el backend
-
-Desde la raíz:
-
-```powershell
-.\venv\Scripts\Activate.ps1
 cd backend
-$env:FLASK_APP="app:create_app"
-flask run
+npm install
+npm run dev        # nodemon src/app.js
 ```
 
-El backend estará disponible en:
+El servidor queda en:
 
 ```text
-http://127.0.0.1:5000
+http://localhost:3000
 ```
 
-La API inicial responde:
-
-```json
-{
-    "message": "TaskFlow API funcionando"
-}
-```
-
-Para detener el servidor:
-
-```text
-Ctrl + C
-```
+Para producción: `npm start`.
 
 ---
 
-# 🎨 Frontend — React + Vite
-
-## Instalar dependencias
-
-Desde la carpeta del frontend:
+## 🎨 Frontend
 
 ```powershell
 cd frontend
 npm install
-```
-
----
-
-## Ejecutar el frontend
-
-```powershell
 npm run dev
 ```
 
-Vite mostrará una dirección similar a:
-
-```text
-http://localhost:5173/
-```
-
-Abrir esa dirección en el navegador.
-
-Para detener el servidor:
-
-```text
-Ctrl + C
-```
-
----
-
-# 🖥️ Ejecutar Backend y Frontend simultáneamente
-
-Se recomienda utilizar **dos terminales de VS Code**.
-
-### Terminal 1 — Backend
-
-```powershell
-cd C:\Users\Dell\Documents\taskflow
-.\venv\Scripts\Activate.ps1
-cd backend
-$env:FLASK_APP="app:create_app"
-flask run
-```
-
-Backend:
-
-```text
-http://127.0.0.1:5000
-```
-
-### Terminal 2 — Frontend
-
-```powershell
-cd C:\Users\Dell\Documents\taskflow
-cd frontend
-npm run dev
-```
-
-Frontend:
+Vite mostrará una dirección como:
 
 ```text
 http://localhost:5173/
@@ -243,255 +120,94 @@ http://localhost:5173/
 
 ---
 
-# 🌿 Git — Ramas
+## 🔐 Autenticación (API simulada)
 
-El proyecto utiliza dos ramas principales:
+El sistema emite **tokens JWT** desde una API simulada de autenticación. Usuarios de prueba definidos en `backend/src/data/mockUsers.js`:
+
+| Username | Password     | Rol    | Permisos                          |
+|----------|--------------|--------|-----------------------------------|
+| `admin`  | `Admin123!`  | admin  | Acceso total y **Dashboard**      |
+| `vecino` | `Vecino123!` | vecino | Consulta y registro de reportes   |
+
+Toda petición a `/api/reportes` debe incluir:
 
 ```text
-main
- │
- └── dev
+Authorization: Bearer <token>
 ```
 
-### `main`
+El Dashboard del administrador **solo se muestra** cuando se inicia sesión como `admin`.
 
-Rama principal y estable del proyecto.
+---
 
-### `dev`
+## 📡 Endpoints
 
-Rama utilizada para desarrollar nuevas funcionalidades, realizar cambios y pruebas.
+| Método | Ruta                  | Autenticación | Rol    | Descripción                          |
+|--------|-----------------------|---------------|--------|--------------------------------------|
+| POST   | `/api/auth/login`     | No            | —      | Iniciar sesión y obtener token JWT   |
+| GET    | `/api/reportes`       | Sí            | ambos  | Listar reportes                      |
+| POST   | `/api/reportes`       | Sí            | ambos  | Registrar un reporte                 |
+| GET    | `/api/reportes/stats` | Sí            | admin  | Estadísticas del dashboard           |
+| DELETE | `/api/reportes/:id`   | Sí            | admin  | Eliminar un reporte                  |
 
-Actualmente el desarrollo se realiza principalmente en:
+Códigos de respuesta semánticos: `200/201` éxito, `400` error de formato (con `field`), `401` no autenticado, `403` sin rol permitido, `404` no encontrado, `422` regla de negocio.
+
+---
+
+## ✅ Verificación
+
+Los **casos de prueba** (12 escenarios documentados paso a paso) están en:
 
 ```text
-dev
+docs/TEST_CASES.md
+```
+
+Ejemplo rápido:
+
+```powershell
+$BASE = "http://localhost:3000/api"
+$login = Invoke-RestMethod -Uri "$BASE/auth/login" -Method Post `
+  -ContentType "application/json" -Body '{"username":"admin","password":"Admin123!"}'
+$token = $login.token
+Invoke-RestMethod -Uri "$BASE/reportes" -Headers @{ Authorization = "Bearer $token" }
 ```
 
 ---
 
-# 🔀 Crear o cambiar a `dev`
+## 🌿 Git — Ramas
 
-Para crear la rama por primera vez:
-
-```powershell
-git checkout -b dev
+```text
+main   → rama estable
+dev    → rama de desarrollo (actual)
 ```
-
-Para cambiar a una rama que ya existe:
 
 ```powershell
 git checkout dev
-```
-
-Verificar la rama actual:
-
-```powershell
-git branch
-```
-
-La rama activa aparece con:
-
-```text
-* dev
-```
-
----
-
-# 📤 Subir cambios a GitHub
-
-Después de realizar cambios:
-
-```powershell
 git status
 git add .
 git commit -m "Descripción del cambio"
 git push
 ```
 
-Si es la primera vez que se sube `dev`:
-
-```powershell
-git push -u origin dev
-```
-
 ---
 
-# 🧹 Entorno virtual
+## 🔒 `.gitignore`
 
-Para salir del entorno virtual:
-
-```powershell
-deactivate
-```
-
-Para volver a activarlo:
-
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
----
-
-# 🔒 `.gitignore`
-
-El proyecto utiliza `.gitignore` para evitar subir archivos innecesarios o sensibles.
+Excluye los archivos sensibles o innecesarios:
 
 ```gitignore
-# Python
-venv/
-__pycache__/
-*.py[cod]
-
-# Environment variables
-.env
-.env.*
-
-# Node
 node_modules/
+.env
+backend/.env
+__pycache__/
 dist/
-
-# VS Code
-.vscode/
-
-# Logs
-*.log
-
-# Operating system
-.DS_Store
-Thumbs.db
 ```
 
-No se deben subir al repositorio:
-
-```text
-venv/
-node_modules/
-.env
-__pycache__/
-```
+> El archivo `backend\.env` contiene las credenciales de la base de datos y el `JWT_SECRET`; **nunca** debe subirse al repositorio.
 
 ---
 
-# 🏗️ Arquitectura
-
-```text
-                  TASKFLOW
-                     │
-          ┌──────────┴──────────┐
-          │                     │
-      FRONTEND                BACKEND
-          │                     │
-   React + Vite               Flask
-          │                     │
-     Tailwind CSS              API
-          │                     │
-          └──────── API ────────┘
-```
-
-## Frontend
-
-Responsable de:
-
-* Interfaz de usuario.
-* Componentes React.
-* Diseño con Tailwind CSS.
-* Consumo de la API.
-
-## Backend
-
-Responsable de:
-
-* API.
-* Lógica de negocio.
-* Rutas.
-* Procesamiento de solicitudes.
-
----
-
-# 📚 Documentación
-
-La documentación adicional se encuentra en:
-
-```text
-docs/
-```
-
-Archivos previstos:
-
-```text
-docs/
-├── alcance.md
-├── arquitectura.md
-├── sostenibilidad.md
-├── backlog.md
-└── acta-mob.md
-```
-
----
-
-# 🌱 Criterios de sostenibilidad
-
-El proyecto considera los siguientes objetivos:
-
-| Criterio      | Objetivo |
-| ------------- | -------- |
-| Peso          | ≤ 500 KB |
-| Lighthouse    | ≥ 90     |
-| Accesibilidad | WCAG AA  |
-| Costo         | 0 Bs     |
-
-Herramientas de evaluación:
-
-* Lighthouse
-* Chrome DevTools
-* Website Carbon / CO₂.js
-
-Las pruebas de rendimiento consideran **throttling 3G**.
-
----
-
-# ✅ Comandos rápidos
-
-## Activar entorno
-
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-## Backend
-
-```powershell
-cd backend
-$env:FLASK_APP="app:create_app"
-flask run
-```
-
-## Frontend
-
-```powershell
-cd frontend
-npm run dev
-```
-
-## Git
-
-```powershell
-git status
-git add .
-git commit -m "Descripción del cambio"
-git push
-```
-
-## Cambiar a desarrollo
-
-```powershell
-git checkout dev
-```
-
----
-
-# 📌 Estado del proyecto
+## 📌 Estado del proyecto
 
 **En desarrollo — MVP**
 
-La configuración inicial del entorno, backend Flask, frontend React/Vite, Git, GitHub y rama `dev` se encuentra establecida.
+Completado: registro/listado/eliminación de reportes, autenticación JWT con API simulada, dashboard con estadísticas y gráficas solo para administradores, interfaz tipo Alcasa con responsividad, y casos de prueba documentados.
