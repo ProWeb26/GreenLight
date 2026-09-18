@@ -10,6 +10,18 @@ const REQUIRED_FIELDS = [
 ];
 
 class ReporteController {
+  async getDashboardStats(req, res) {
+    try {
+      const stats = await reporteService.getDashboardStats();
+      return res.status(200).json({ data: stats });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        error: 'Ocurrió un error interno al generar las estadísticas del dashboard.'
+      });
+    }
+  }
+
   async getReportes(req, res) {
     try {
       const reportes = await reporteService.getAllReportes();

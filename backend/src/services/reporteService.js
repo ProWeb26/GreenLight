@@ -5,6 +5,22 @@ class ReporteService {
     return await reporteRepository.findAll();
   }
 
+  async getDashboardStats() {
+    const [summary, porEstado, porMes, recientes] = await Promise.all([
+      reporteRepository.getSummary(),
+      reporteRepository.countByEstado(),
+      reporteRepository.countByMonth(),
+      reporteRepository.findRecent()
+    ]);
+
+    return {
+      summary,
+      porEstado,
+      porMes,
+      recientes
+    };
+  }
+
   async createReporte(data) {
     const ubicacionLimpia = data.ubicacion_texto.trim().replace(/\s+/g, ' ');
 

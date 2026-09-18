@@ -29,6 +29,55 @@ class ReporteRepository {
     const { rows } = await db.query(query, [id]);
     return rows.length > 0;
   }
+
+  async getSummary() {
+    const query = `
+      SELECT
+        COUNT(*)::int AS total,
+        COUNT(*) FILTER (WHERE estado = 'activo')::int AS activos,
+        COUNT(*) FILTER (WHERE estado <> 'activo')::int AS cerrados,
+        COUNT(*) FILTER (WHERE date_trunc('month', fecha_creacion) = date_trunc('month', CURRENT_TIMESTAMP))::int AS este_mes
+      FROM reporte;
+    `;
+    const { rows } = await db.query(query);
+    return rows[0];
+  }
+
+  async countByEstado() {
+    const query = `
+      SELECT estado, COUNT(*)::int AS total
+      FROM reporte
+      GROUP BY estado
+      ORDER BY total DESC;
+    `;
+    const { rows } = await db.query(query);
+    return rows;
+  }
+
+  async countByMonth(limit = 6) {
+    const query = `
+      SELECT
+        to_char(fecha_creacion, 'YYYY-MM') AS mes,
+        COUNT(*)::int AS total
+      FROM reporte
+      GROUP BY to_char(fecha_creacion, 'YYYY-MM')
+      ORDER BY mes DESC
+      LIMIT $1;
+    `;
+    const { rows } = await db.query(query, [limit]);
+    return rows.reverse();
+  }
+
+  async findRecent(limit = 5) {
+    const query = `
+      SELECT id, ubicacion_texto, tipo_id, descripcion, estado, fecha_creacion
+      FROM reporte
+      ORDER BY fecha_creacion DESC
+      LIMIT $1;
+    `;
+    const { rows } = await db.query(query, [limit]);
+    return rows;
+  }
 }
 
 module.exports = new ReporteRepository();
