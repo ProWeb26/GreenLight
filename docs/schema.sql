@@ -3,14 +3,14 @@
 -- db.create_all(); este script es la versión declarativa para el SQL Editor.
 -- La API se conecta con el rol service_role (RLS no aplica): las políticas son
 -- documentación de seguridad para cuando se use el rol anon/authenticated.
-
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- IMPORTANTE: los IDs se guardan como VARCHAR(36) porque así los definen los
+-- modelos de SQLAlchemy (String(36)); no usar columnas UUID.
 
 -- ---------------------------------------------------------------------------
 -- 1. Comunidades
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS comunidad (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id            VARCHAR(36) PRIMARY KEY,
     nombre        VARCHAR(120) NOT NULL,
     descripcion   TEXT,
     zona_ciudad   VARCHAR(120),
@@ -24,13 +24,13 @@ CREATE TABLE IF NOT EXISTS comunidad (
 -- 2. Usuarios
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS usuario (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id            VARCHAR(36) PRIMARY KEY,
     nombre        VARCHAR(120) NOT NULL,
     correo        VARCHAR(160) NOT NULL UNIQUE,
     contraseña_hash VARCHAR(255) NOT NULL,
     rol           VARCHAR(20) NOT NULL DEFAULT 'usuario'
                   CHECK (rol IN ('usuario', 'coordinador')),
-    comunidad_id  UUID REFERENCES comunidad(id) ON DELETE SET NULL,
+    comunidad_id  VARCHAR(36) REFERENCES comunidad(id) ON DELETE SET NULL,
     fecha_creacion TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -49,9 +49,9 @@ CREATE TABLE IF NOT EXISTS tipo_incidente (
 -- 4. Reportes
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS reporte (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    comunidad_id  UUID REFERENCES comunidad(id) ON DELETE SET NULL,
-    usuario_id    UUID NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
+    id            VARCHAR(36) PRIMARY KEY,
+    comunidad_id  VARCHAR(36) REFERENCES comunidad(id) ON DELETE SET NULL,
+    usuario_id    VARCHAR(36) NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
     tipo_id       INT NOT NULL REFERENCES tipo_incidente(id),
     ubicacion_texto VARCHAR(255),
     latitud       DOUBLE PRECISION,
@@ -68,11 +68,11 @@ CREATE TABLE IF NOT EXISTS reporte (
 -- 5. Confirmaciones de la comunidad
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS confirmacion (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    reporte_id    UUID NOT NULL REFERENCES reporte(id) ON DELETE CASCADE,
-    usuario_id    UUID NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
-    fecha_creacion TIMESTAMPTZ DEFAULT NOW(),
-    CONSTRAINT uq_confirmacion_usuario_reporte UNIQUE (usuario_id, reporte_id)
+    id            VARCHAR(36) PRIMARY KEY,
+    reporte_id    VARCHAR(36) NOT NULL REFERENCES reporte(id) ON DELETE CASCADE,
+    usuario_id    VARCHAR(36) NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
+    fecha_confirmacion TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT uq_confirmacion_reporte_usuario UNIQUE (usuario_id, reporte_id)
 );
 
 -- ---------------------------------------------------------------------------
