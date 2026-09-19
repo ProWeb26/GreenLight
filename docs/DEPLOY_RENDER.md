@@ -1,8 +1,9 @@
-# Despliegue de GreenLight (Flask + Supabase + Cloudflare)
+# Despliegue de GreenLight (Flask + Supabase)
 
 El backend definitivo de la materia es **Flask** (gunicorn en Render) y el
-frontend **React + Vite** se publica en **Cloudflare Pages** (también queda
-listo el blueprint para Render). Hay **dos APIs**:
+frontend **React + Vite** se publica en Render con `frontend/server.py` (SPA
+con fallback a `index.html`; Cloudflare Pages también está documentado como
+opción). Hay **dos APIs**:
 
 | Servicio         | Carpeta   | Tec | Descripción                         |
 |------------------|-----------|-----|-------------------------------------|
@@ -11,8 +12,7 @@ listo el blueprint para Render). Hay **dos APIs**:
 | `greenlight-web` | `frontend`| React | Frontend GreenLight (Vite + Tailwind) |
 
 > El blueprint `render.yaml` de la raíz crea `greenlight-api`, `taskflow-api` y
-> `greenlight-web` si se usa Render para todo. La guía del profesor usa
-> **Render (API) + Cloudflare Pages (frontend)**, que es lo que se documenta abajo.
+> `greenlight-web` si se usa Render para todo.
 
 ---
 
@@ -48,7 +48,20 @@ curl https://taskflow-api.onrender.com/api/health
 > también con Python 3.14. La API acepta la cadena `postgresql://...` de
 > Supabase tal cual: `config.py` la normaliza a `postgresql+psycopg://`.
 
-## 3. Publicar el frontend en Cloudflare Pages
+## 3. Publicar el frontend
+
+### Opción A (recomendada): web service en Render con SPA fallback
+
+Un web service en Render sirve `frontend/dist` con `frontend/server.py` (Python,
+sin dependencias), devolviendo `index.html` en las rutas desconocidas para que
+las rutas SPA (`/feed`, `/reportar`, `/admin`, ...) funcionen al refrescar:
+
+- `rootDir`: `frontend`
+- Build: `npm install && npm run build`
+- Start: `python server.py`
+- Env var: `VITE_API_URL = https://greenlight-api.onrender.com/api`
+
+### Opción B: Cloudflare Pages
 
 1. En [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages → Create → Pages → Connect to Git**.
 2. Repositorio, framework **Vite**, build `npm run build`, output directorio `dist`.
@@ -58,9 +71,6 @@ curl https://taskflow-api.onrender.com/api/health
    ```
 4. **Save and Deploy**. Las rutas SPA (`/feed`, `/reportar`, `/admin`, etc.)
    ya funcionan gracias al archivo `frontend/public/_redirects`.
-
-> Alternativa: desplegar el estático también en Render (servicio `greenlight-web`
-> del blueprint) y ajustar `VITE_API_URL` en su entorno.
 
 ## 4. Datos de prueba en producción
 
