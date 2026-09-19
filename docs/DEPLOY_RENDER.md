@@ -44,7 +44,9 @@ curl https://taskflow-api.onrender.com/api/health
 ```
 
 > Nota Render/Python: el runtime usa Python 3.13 y lee `requirements.txt`.
-> Si `psycopg2-binary` falla al instalar, sustitúyelo por `psycopg[binary]`.
+> El driver de Postgres es **psycopg v3** (`psycopg[binary]`), compatible
+> también con Python 3.14. La API acepta la cadena `postgresql://...` de
+> Supabase tal cual: `config.py` la normaliza a `postgresql+psycopg://`.
 
 ## 3. Publicar el frontend en Cloudflare Pages
 
