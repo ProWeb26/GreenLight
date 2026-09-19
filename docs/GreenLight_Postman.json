@@ -1,33 +1,32 @@
 {
   "info": {
     "name": "GreenLight API",
-    "description": "GreenLight: Red comunitaria de reporte de quemas y focos de humo (Flask + Supabase). Variables: base_url (http://localhost:5000/api), token (se autocompleta con el login).",
+    "description": "GreenLight: Red comunitaria de reporte de quemas y focos de humo (Flask + Supabase).\n\nCómo usarla:\n1) Importar esta colección.\n2) Base correcta: {{base_url}} = http://localhost:5000/api (ya viene así).\n3) Ejecutar en orden las carpetas: '2. Autenticación' (hace login y guarda los tokens), luego '3. Feed y reportes' y '4. Estadísticas y catálogos'.\nLos IDs se guardan solos al ejecutar cada request (reporte_id, usuario_id, comunidad_id, tipo_id). María crea, Carlos confirma, el coordinador verifica.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     { "key": "base_url", "value": "http://localhost:5000/api" },
-    { "key": "token", "value": "" }
+    { "key": "token", "value": "" },
+    { "key": "token_maria", "value": "" },
+    { "key": "token_carlos", "value": "" },
+    { "key": "usuario_id", "value": "" },
+    { "key": "reporte_id", "value": "" },
+    { "key": "comunidad_id", "value": "" },
+    { "key": "tipo_id", "value": "" }
   ],
   "item": [
     {
-      "name": "Auth",
+      "name": "1. Health",
       "item": [
         {
           "name": "Health check",
           "request": { "method": "GET", "url": "{{base_url}}/health" }
-        },
-        {
-          "name": "Registro",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{ \"nombre\": \"Vecina Nueva\", \"correo\": \"nueva@greenlight.test\", \"contraseña\": \"Vecino123!\", \"comunidad_id\": null }"
-            },
-            "url": "{{base_url}}/auth/registro"
-          }
-        },
+        }
+      ]
+    },
+    {
+      "name": "2. Autenticación (tokens automáticos)",
+      "item": [
         {
           "name": "Login (coordinador)",
           "event": [
@@ -36,7 +35,7 @@
               "script": {
                 "exec": [
                   "const json = pm.response.json();",
-                  "pm.collectionVariables.set('token', json.token);"
+                  "if (json.token) pm.collectionVariables.set('token', json.token);"
                 ],
                 "type": "text/javascript"
               }
@@ -48,6 +47,54 @@
             "body": {
               "mode": "raw",
               "raw": "{ \"correo\": \"coordinador@greenlight.test\", \"contraseña\": \"Coordi123!\" }"
+            },
+            "url": "{{base_url}}/auth/login"
+          }
+        },
+        {
+          "name": "Login (María)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) pm.collectionVariables.set('token_maria', json.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"correo\": \"maria@greenlight.test\", \"contraseña\": \"Vecino123!\" }"
+            },
+            "url": "{{base_url}}/auth/login"
+          }
+        },
+        {
+          "name": "Login (Carlos)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) pm.collectionVariables.set('token_carlos', json.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"correo\": \"carlos@greenlight.test\", \"contraseña\": \"Vecino123!\" }"
             },
             "url": "{{base_url}}/auth/login"
           }
@@ -69,6 +116,39 @@
           }
         },
         {
+          "name": "Registro (nuevo usuario)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('nuevo_correo', 'nueva' + Date.now() + '@greenlight.test');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.usuario) pm.collectionVariables.set('usuario_id', json.usuario.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"nombre\": \"Vecina Nueva\", \"correo\": \"{{nuevo_correo}}\", \"contraseña\": \"Vecino123!\" }"
+            },
+            "url": "{{base_url}}/auth/registro"
+          }
+        },
+        {
           "name": "Cambiar rol de usuario (coord)",
           "request": {
             "method": "PUT",
@@ -77,7 +157,7 @@
               "mode": "raw",
               "raw": "{ \"rol\": \"coordinador\" }"
             },
-            "url": "{{base_url}}/auth/usuarios/USUARIO_ID"
+            "url": "{{base_url}}/auth/usuarios/{{usuario_id}}"
           }
         },
         {
@@ -85,34 +165,35 @@
           "request": {
             "method": "DELETE",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "{{base_url}}/auth/usuarios/USUARIO_ID"
+            "url": "{{base_url}}/auth/usuarios/{{usuario_id}}"
           }
         }
       ]
     },
     {
-      "name": "Feed y reportes",
+      "name": "3. Feed y reportes (María crea, Carlos confirma)",
       "item": [
         {
-          "name": "Feed (todos)",
+          "name": "Feed completo",
           "request": { "method": "GET", "url": "{{base_url}}/feed" }
         },
         {
-          "name": "Feed con filtros",
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/feed?tipo_id=1&comunidad_id=COMUNIDAD_ID&estado=activo"
-          }
-        },
-        {
-          "name": "Obtener reporte",
-          "request": { "method": "GET", "url": "{{base_url}}/reportes/REPORTE_ID" }
-        },
-        {
-          "name": "Crear reporte",
+          "name": "Crear reporte (María)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.id) pm.collectionVariables.set('reporte_id', json.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_maria}}" }],
             "body": {
               "mode": "raw",
               "raw": "{ \"tipo_id\": 2, \"comunidad_id\": null, \"ubicacion_texto\": \"Vereda El Roble, km 4\", \"descripcion\": \"Humo denso saliendo del monte.\" }"
@@ -121,27 +202,31 @@
           }
         },
         {
-          "name": "Actualizar reporte (autor)",
+          "name": "Obtener reporte",
+          "request": { "method": "GET", "url": "{{base_url}}/reportes/{{reporte_id}}" }
+        },
+        {
+          "name": "Actualizar reporte (María)",
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_maria}}" }],
             "body": {
               "mode": "raw",
-              "raw": "{ \"descripcion\": \"Humo muy denso, pide apoyo.\", \"ubicacion_texto\": \"Vereda El Roble, km 4\" }"
+              "raw": "{ \"descripcion\": \"Humo muy denso, pide apoyo.\" }"
             },
-            "url": "{{base_url}}/reportes/REPORTE_ID"
+            "url": "{{base_url}}/reportes/{{reporte_id}}"
           }
         },
         {
-          "name": "Confirmar reporte",
+          "name": "Confirmar reporte (Carlos)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "{{base_url}}/reportes/REPORTE_ID/confirmar"
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_carlos}}" }],
+            "url": "{{base_url}}/reportes/{{reporte_id}}/confirmar"
           }
         },
         {
-          "name": "Cambiar estado (coord)",
+          "name": "Cambiar estado a verificado (coord)",
           "request": {
             "method": "PATCH",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
@@ -149,33 +234,33 @@
               "mode": "raw",
               "raw": "{ \"estado\": \"verificado\" }"
             },
-            "url": "{{base_url}}/reportes/REPORTE_ID/estado"
+            "url": "{{base_url}}/reportes/{{reporte_id}}/estado"
           }
         },
         {
-          "name": "Eliminar reporte (autor/coord)",
+          "name": "Sync offline (María)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_maria}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"reportes\": [ { \"tipo_id\": 1, \"descripcion\": \"Reporte creado sin conexión\", \"ubicacion_texto\": \"Zona rural\" } ], \"confirmaciones\": [] }"
+            },
+            "url": "{{base_url}}/sync"
+          }
+        },
+        {
+          "name": "Eliminar reporte (coord)",
           "request": {
             "method": "DELETE",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "{{base_url}}/reportes/REPORTE_ID"
-          }
-        },
-        {
-          "name": "Envión offline (sync)",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{ \"reportes\": [], \"confirmaciones\": [{ \"reporte_id\": \"REPORTE_ID\" }] }"
-            },
-            "url": "{{base_url}}/sync"
+            "url": "{{base_url}}/reportes/{{reporte_id}}"
           }
         }
       ]
     },
     {
-      "name": "Estadísticas y catálogos",
+      "name": "4. Estadísticas y catálogos",
       "item": [
         {
           "name": "Stats",
@@ -187,12 +272,24 @@
         },
         {
           "name": "Crear comunidad (coord)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.id) pm.collectionVariables.set('comunidad_id', json.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "body": {
               "mode": "raw",
-              "raw": "{ \"nombre\": \"Nueva Comunidad\", \"zona_ciudad\": \"Zona Norte\" }"
+              "raw": "{ \"nombre\": \"Comunidad Demo\", \"zona_ciudad\": \"Zona Norte\" }"
             },
             "url": "{{base_url}}/comunidades"
           }
@@ -202,7 +299,7 @@
           "request": {
             "method": "DELETE",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "{{base_url}}/comunidades/COMUNIDAD_ID"
+            "url": "{{base_url}}/comunidades/{{comunidad_id}}"
           }
         },
         {
@@ -211,6 +308,18 @@
         },
         {
           "name": "Crear tipo (coord)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.id) pm.collectionVariables.set('tipo_id', json.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
@@ -226,7 +335,7 @@
           "request": {
             "method": "DELETE",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "{{base_url}}/tipo-incidentes/9"
+            "url": "{{base_url}}/tipo-incidentes/{{tipo_id}}"
           }
         }
       ]

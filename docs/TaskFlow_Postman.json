@@ -1,11 +1,13 @@
 {
   "info": {
     "name": "TaskFlow API",
-    "description": "TaskFlow: API de tareas por usuario, implementada según el Plan de Pruebas Postman. Variable: base_url (http://localhost:5000/api). Sin autenticación.",
+    "description": "TaskFlow: API de tareas por usuario, implementada según el Plan de Pruebas Postman.\n\nCómo usarla:\n1) Importar esta colección.\n2) Base correcta: {{base_url}} = http://localhost:5001/api (puerto 5001, NO 5000).\n3) Ejecutar en orden las carpetas: 1 → 2 → 3 → 4 → 5.\nLos IDs (usuario_id, tarea_id) se guardan solos al crear el usuario y la tarea. Sin autenticación.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "base_url", "value": "http://localhost:5000/api" }
+    { "key": "base_url", "value": "http://localhost:5001/api" },
+    { "key": "usuario_id", "value": "" },
+    { "key": "tarea_id", "value": "" }
   ],
   "item": [
     {
@@ -25,20 +27,41 @@
           "request": { "method": "GET", "url": "{{base_url}}/users" }
         },
         {
-          "name": "Crear usuario",
+          "name": "Crear usuario (Ana)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('nuevo_email', 'ana' + Date.now() + '@taskflow.test');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.id) pm.collectionVariables.set('usuario_id', json.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{ \"nombre\": \"Ana López\", \"email\": \"ana@taskflow.test\", \"rol\": \"usuario\" }"
+              "raw": "{ \"nombre\": \"Ana López\", \"email\": \"{{nuevo_email}}\", \"rol\": \"usuario\" }"
             },
             "url": "{{base_url}}/users"
           }
         },
         {
           "name": "Obtener usuario",
-          "request": { "method": "GET", "url": "{{base_url}}/users/USUARIO_ID" }
+          "request": { "method": "GET", "url": "{{base_url}}/users/{{usuario_id}}" }
         },
         {
           "name": "Actualizar usuario",
@@ -49,12 +72,8 @@
               "mode": "raw",
               "raw": "{ \"nombre\": \"Ana López Cruz\", \"rol\": \"coordinador\" }"
             },
-            "url": "{{base_url}}/users/USUARIO_ID"
+            "url": "{{base_url}}/users/{{usuario_id}}"
           }
-        },
-        {
-          "name": "Eliminar usuario",
-          "request": { "method": "DELETE", "url": "{{base_url}}/users/USUARIO_ID" }
         }
       ]
     },
@@ -67,19 +86,31 @@
         },
         {
           "name": "Crear tarea",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.id) pm.collectionVariables.set('tarea_id', json.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{ \"usuario_id\": \"USUARIO_ID\", \"titulo\": \"Revisar foco El Pajonal\", \"descripcion\": \"Confirmar avance del quechao.\", \"prioridad\": \"alta\" }"
+              "raw": "{ \"usuario_id\": \"{{usuario_id}}\", \"titulo\": \"Revisar foco El Pajonal\", \"descripcion\": \"Confirmar avance de la quema controlada.\", \"prioridad\": \"alta\" }"
             },
             "url": "{{base_url}}/tasks"
           }
         },
         {
           "name": "Obtener tarea",
-          "request": { "method": "GET", "url": "{{base_url}}/tasks/TAREA_ID" }
+          "request": { "method": "GET", "url": "{{base_url}}/tasks/{{tarea_id}}" }
         },
         {
           "name": "Actualizar tarea",
@@ -90,20 +121,16 @@
               "mode": "raw",
               "raw": "{ \"titulo\": \"Revisar foco (prioridad urgente)\", \"prioridad\": \"alta\" }"
             },
-            "url": "{{base_url}}/tasks/TAREA_ID"
+            "url": "{{base_url}}/tasks/{{tarea_id}}"
           }
         },
         {
           "name": "Completar tarea",
-          "request": { "method": "PATCH", "url": "{{base_url}}/tasks/TAREA_ID/complete" }
+          "request": { "method": "PATCH", "url": "{{base_url}}/tasks/{{tarea_id}}/complete" }
         },
         {
           "name": "Tareas completadas",
           "request": { "method": "GET", "url": "{{base_url}}/tasks/completed" }
-        },
-        {
-          "name": "Eliminar tarea",
-          "request": { "method": "DELETE", "url": "{{base_url}}/tasks/TAREA_ID" }
         }
       ]
     },
@@ -112,11 +139,24 @@
       "item": [
         {
           "name": "Tareas de un usuario",
-          "request": { "method": "GET", "url": "{{base_url}}/users/USUARIO_ID/tasks" }
+          "request": { "method": "GET", "url": "{{base_url}}/users/{{usuario_id}}/tasks" }
         },
         {
           "name": "Estadísticas del usuario",
-          "request": { "method": "GET", "url": "{{base_url}}/users/USUARIO_ID/stats" }
+          "request": { "method": "GET", "url": "{{base_url}}/users/{{usuario_id}}/stats" }
+        }
+      ]
+    },
+    {
+      "name": "5. Limpieza",
+      "item": [
+        {
+          "name": "Eliminar tarea",
+          "request": { "method": "DELETE", "url": "{{base_url}}/tasks/{{tarea_id}}" }
+        },
+        {
+          "name": "Eliminar usuario",
+          "request": { "method": "DELETE", "url": "{{base_url}}/users/{{usuario_id}}" }
         }
       ]
     }
