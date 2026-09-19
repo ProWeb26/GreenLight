@@ -1,16 +1,47 @@
-# React + Vite
+# GreenLight Web (React + Vite + Tailwind)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend de **GreenLight**, la red comunitaria offline-first de reporte de
+quemas y focos de humo (Programación Web II – UPDS).
 
-Currently, two official plugins are available:
+## Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Login / registro con JWT (`POST /api/auth/login` y `/registro`).
+- **Feed** con filtros por tipo de incidente y comunidad; confirmación `+1`.
+- **Reportar** con cola offline: si no hay conexión, el reporte se guarda en
+  `localStorage` y se sincroniza vía `POST /api/sync` al recuperar señal.
+- **Mis reportes**: editar y eliminar los propios.
+- **Administración** (solo coordinador): comunidades, tipos de incidente,
+  usuarios (rol) y estados de reportes.
 
-## React Compiler
+## Variables de entorno
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Copia `frontend/.env.example` como `.env`:
 
-## Expanding the ESLint configuration
+```dotenv
+VITE_API_URL=http://localhost:5000/api
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+> En producción (Cloudflare Pages o Render) la variable se define en el panel
+> y apunta a la URL del backend Flask desplegado.
+
+## Comandos
+
+```powershell
+npm install
+npm run dev        # http://localhost:5173
+npm run lint
+npm run build
+```
+
+## Rutas
+
+| Ruta          | Acceso      |
+|---------------|-------------|
+| `/login`      | público     |
+| `/feed`       | usuario     |
+| `/reportar`   | usuario     |
+| `/mis-reportes`| usuario    |
+| `/admin`      | coordinador |
+
+La estructura `dist/` se publica en Cloudflare Pages; el archivo
+`public/_redirects` habilita el enrutamiento SPA.

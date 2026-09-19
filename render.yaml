@@ -1,0 +1,57 @@
+# Blueprint de Render para GreenLight
+# Servicios web Flask (gunicorn) + frontend estático.
+# En Render: New > Blueprint > seleccionar el repositorio > Apply.
+# Para usar Supabase: configura DATABASE_URL (Session pooler) en cada servicio.
+# El frontend también puede desplegarse en Cloudflare Pages (ver docs/DEPLOY_RENDER.md).
+
+services:
+  # ---------------------------------------------------------------------------
+  # API principal: GreenLight (reporte de quemas)
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: greenlight-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    healthCheckPath: /api/health
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn "app:app" --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_EXPIRATION_MINUTES
+        value: "120"
+      - key: CONFIRMATION_THRESHOLD
+        value: "3"
+      - key: DATABASE_URL
+        sync: false
+
+  # ---------------------------------------------------------------------------
+  # API complementaria: TaskFlow (Plan de Pruebas Postman)
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: taskflow-api
+    runtime: python
+    plan: free
+    rootDir: taskflow
+    healthCheckPath: /api/health
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn "app:app" --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+
+  # ---------------------------------------------------------------------------
+  # Frontend GreenLight (React). Opcional si prefieres Cloudflare Pages.
+  # ---------------------------------------------------------------------------
+  - type: static_site
+    name: greenlight-web
+    runtime: static
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    publishPath: dist
+    envVars:
+      # Apunta a la URL final del servicio greenlight-api en Render.
+      - key: VITE_API_URL
+        value: https://greenlight-api.onrender.com/api

@@ -1,11 +1,30 @@
+# Dependencias
 node_modules/
+
+# Variables de entorno (no subir secretos)
 .env
-backend/.env
+.env.local
+.env.*
+!.env.example
 
 # Logs
 *.log
 npm-debug.log*
 
-# OS
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.db
+*.sqlite3
+
+# Builds
+dist/
+build/
+
+# Sistema
 .DS_Store
 Thumbs.db
+server.log

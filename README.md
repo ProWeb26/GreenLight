@@ -1,213 +1,84 @@
-# GreenLight — Panel Comunitario
+# GreenLight — Reporte de quemas y focos de humo
 
-Aplicación web para el **registro y gestión de reportes comunitarios**, desarrollada para **Programación Web II – UPDS** con una **arquitectura de 5 responsabilidades** (capa de API, lógica de negocio, acceso a datos, base de datos y cliente web).
+Proyecto final de **Programación Web II – UPDS**: una **red comunitaria
+offline-first** para reportar quemas y focos de humo, seguir su estado
+(activo → confirmado_comunidad → verificado) y sincronizar los reportes
+cuando se recupera la señal.
 
-## 🛠️ Tecnologías
+Además del proyecto principal, el repositorio incluye el **Mini Task Manager**
+(laboratorio de clase en Node) y la API **TaskFlow** (plan de pruebas Postman),
+ambos como entregables de la materia.
 
-* Backend: Node.js, Express 5, PostgreSQL (Supabase), jsonwebtoken, pg, cors, dotenv, nodemon
-* Frontend: React 19, Vite, chart.js
-* Autenticación: JWT con **API simulada** (usuarios mock)
-* Infraestructura: Git, GitHub, VS Code
+## Módulos
 
----
+| Módulo             | Carpeta   | Stack                     | Tests |
+|--------------------|-----------|---------------------------|-------|
+| **GreenLight API** | `backend` | Flask + SQLAlchemy + JWT  | 35 ✓ |
+| **TaskFlow API**   | `taskflow`| Flask + SQLAlchemy        | 19 ✓ |
+| **GreenLight Web** | `frontend`| React 19 + Vite + Tailwind| lint+build ✓ |
+| Mini Task Manager  | `mini-task-manager` | Node/Express + React (laboratorio) | 21 (Node) |
 
-## 📁 Estructura del proyecto
+## Entidades (GreenLight)
 
-```text
-greenlight/
-│
-├── backend/                    # API Node/Express
-│   ├── src/
-│   │   ├── app.js              # Punto de entrada + middlewares
-│   │   ├── config/db.js        # Conexión a PostgreSQL (Supabase)
-│   │   ├── controllers/        # Capa API (valida formato/HTTP) — auth, reportes
-│   │   ├── services/           # Capa de lógica de negocio
-│   │   ├── repositories/       # Capa de acceso a datos (SQL parametrizado)
-│   │   ├── routes/             # Definición de rutas REST
-│   │   ├── middleware/         # authMiddleware y requireRole
-│   │   └── data/mockUsers.js   # Usuarios de la API simulada
-│   └── package.json
-│
-├── frontend/                   # Cliente React + Vite
-│   ├── src/
-│   │   ├── App.jsx             # Shell: login, header, sidebar, navegación
-│   │   ├── Reportes.jsx        # Registro y listado de reportes
-│   │   ├── Dashboard.jsx       # Panel del administrador (estadísticas)
-│   │   ├── App.css / index.css # Tema visual (estilo Alcasa)
-│   │   └── main.jsx
-│   └── package.json
-│
-├── docs/
-│   ├── schema.sql              # DDL de la tabla reporte
-│   └── TEST_CASES.md           # Casos de prueba documentados
-│
-├── .env.example
-├── .gitignore
-└── README.md
-```
+`Usuario` (usuario/coordinador) · `Comunidad` · `TipoIncidente` ·
+`Reporte` (activo → confirmado_comunidad con umbral 3 → verificado) ·
+`Confirmacion` (+1 por usuario).
 
-> `node_modules/`, `.env` y `__pycache__/` están excluidos mediante `.gitignore`.
+## Requisitos
 
----
+- Python 3.11+ · Node 18+ · PostgreSQL (Supabase) **o** SQLite local.
 
-## ⚙️ Requisitos
-
-* Node.js 18 o superior
-* Cuenta en [Supabase](https://supabase.com) (PostgreSQL) — o un PostgreSQL local
-* Git, VS Code
-
----
-
-## 🚀 Configuración inicial
-
-### 1. Clonar el repositorio
+## Arranque local
 
 ```powershell
-git clone https://github.com/ProWeb26/GreenLight.git
-cd GreenLight
-```
-
-### 2. Base de datos (Supabase)
-
-1. Crea un proyecto en [Supabase](https://supabase.com).
-2. En **Connect**, copia la cadena de conexión **Session pooler**.
-3. Ejecuta `docs\schema.sql` en el **SQL Editor** de Supabase para crear la tabla `reporte`.
-
-### 3. Variables de entorno
-
-Copia `backend\.env` desde `.env.example` y completa tus credenciales:
-
-```dotenv
-PORT=3000
-DATABASE_URL=postgresql://usuario:contraseña@host:5432/postgres
-JWT_SECRET=cambia-este-secreto
-JWT_EXPIRES_IN=2h
-```
-
----
-
-## 🔧 Backend
-
-```powershell
+# GreenLight API
 cd backend
-npm install
-npm run dev        # nodemon src/app.js
-```
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt -r requirements-dev.txt
+Copy-Item .env.example .env    # ajusta DATABASE_URL (SQLite por defecto)
+python seed.py                 # siembra datos de ejemplo
+flask --app app run --debug    # http://localhost:5000
 
-El servidor queda en:
+# TaskFlow API
+cd taskflow
+pip install -r requirements.txt
+flask --app app run --port 5001 --debug
 
-```text
-http://localhost:3000
-```
-
-Para producción: `npm start`.
-
----
-
-## 🎨 Frontend
-
-```powershell
+# Frontend
 cd frontend
 npm install
-npm run dev
+Copy-Item .env.example .env    # VITE_API_URL=http://localhost:5000/api
+npm run dev                    # http://localhost:5173
 ```
 
-Vite mostrará una dirección como:
+### Usuarios de prueba (GreenLight)
 
-```text
-http://localhost:5173/
-```
+| Correo | Contraseña | Rol |
+|--------|-----------|-----|
+| `coordinador@greenlight.test` | `Coordi123!` | coordinador |
+| `maria@greenlight.test` | `Vecino123!` | usuario |
+| `carlos@greenlight.test` | `Vecino123!` | usuario |
 
----
-
-## 🔐 Autenticación (API simulada)
-
-El sistema emite **tokens JWT** desde una API simulada de autenticación. Usuarios de prueba definidos en `backend/src/data/mockUsers.js`:
-
-| Username | Password     | Rol    | Permisos                          |
-|----------|--------------|--------|-----------------------------------|
-| `admin`  | `Admin123!`  | admin  | Acceso total y **Dashboard**      |
-| `vecino` | `Vecino123!` | vecino | Consulta y registro de reportes   |
-
-Toda petición a `/api/reportes` debe incluir:
-
-```text
-Authorization: Bearer <token>
-```
-
-El Dashboard del administrador **solo se muestra** cuando se inicia sesión como `admin`.
-
----
-
-## 📡 Endpoints
-
-| Método | Ruta                  | Autenticación | Rol    | Descripción                          |
-|--------|-----------------------|---------------|--------|--------------------------------------|
-| POST   | `/api/auth/login`     | No            | —      | Iniciar sesión y obtener token JWT   |
-| GET    | `/api/reportes`       | Sí            | ambos  | Listar reportes                      |
-| POST   | `/api/reportes`       | Sí            | ambos  | Registrar un reporte                 |
-| GET    | `/api/reportes/stats` | Sí            | admin  | Estadísticas del dashboard           |
-| DELETE | `/api/reportes/:id`   | Sí            | admin  | Eliminar un reporte                  |
-
-Códigos de respuesta semánticos: `200/201` éxito, `400` error de formato (con `field`), `401` no autenticado, `403` sin rol permitido, `404` no encontrado, `422` regla de negocio.
-
----
-
-## ✅ Verificación
-
-Los **casos de prueba** (12 escenarios documentados paso a paso) están en:
-
-```text
-docs/TEST_CASES.md
-```
-
-Ejemplo rápido:
+## Verificación
 
 ```powershell
-$BASE = "http://localhost:3000/api"
-$login = Invoke-RestMethod -Uri "$BASE/auth/login" -Method Post `
-  -ContentType "application/json" -Body '{"username":"admin","password":"Admin123!"}'
-$token = $login.token
-Invoke-RestMethod -Uri "$BASE/reportes" -Headers @{ Authorization = "Bearer $token" }
+cd backend && python -m pytest        # 35 verdes
+cd taskflow && python -m pytest       # 19 verdes
+cd frontend && npm run lint && npm run build
 ```
 
----
+## Docs
 
-## 🌿 Git — Ramas
+- `docs/DEPLOY_RENDER.md` — Render (Flask/gunicorn) + Supabase + Cloudflare Pages.
+- `docs/schema.sql` y `docs/schema_taskflow.sql` — esquemas PostgreSQL/Supabase.
+- `docs/GreenLight_Postman.json` y `docs/TaskFlow_Postman.json` — colecciones Postman.
+- `docs/TEST_CASES.md` y `docs/PERFORMANCE_ACCESSIBILITY.md` — pruebas y
+  presupuesto Lighthouse/WCAG (300–500 KB, ≥ 90).
+
+## Git — Ramas
 
 ```text
-main   → rama estable
-dev    → rama de desarrollo (actual)
+main  → rama estable
+dev   → rama de desarrollo (actual)
 ```
-
-```powershell
-git checkout dev
-git status
-git add .
-git commit -m "Descripción del cambio"
-git push
-```
-
----
-
-## 🔒 `.gitignore`
-
-Excluye los archivos sensibles o innecesarios:
-
-```gitignore
-node_modules/
-.env
-backend/.env
-__pycache__/
-dist/
-```
-
-> El archivo `backend\.env` contiene las credenciales de la base de datos y el `JWT_SECRET`; **nunca** debe subirse al repositorio.
-
----
-
-## 📌 Estado del proyecto
-
-**En desarrollo — MVP**
-
-Completado: registro/listado/eliminación de reportes, autenticación JWT con API simulada, dashboard con estadísticas y gráficas solo para administradores, interfaz tipo Alcasa con responsividad, y casos de prueba documentados.

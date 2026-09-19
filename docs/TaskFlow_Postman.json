@@ -1,0 +1,124 @@
+{
+  "info": {
+    "name": "TaskFlow API",
+    "description": "TaskFlow: API de tareas por usuario, implementada según el Plan de Pruebas Postman. Variable: base_url (http://localhost:5000/api). Sin autenticación.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5000/api" }
+  ],
+  "item": [
+    {
+      "name": "1. Health",
+      "item": [
+        {
+          "name": "Health check",
+          "request": { "method": "GET", "url": "{{base_url}}/health" }
+        }
+      ]
+    },
+    {
+      "name": "2. Usuarios",
+      "item": [
+        {
+          "name": "Listar usuarios",
+          "request": { "method": "GET", "url": "{{base_url}}/users" }
+        },
+        {
+          "name": "Crear usuario",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"nombre\": \"Ana López\", \"email\": \"ana@taskflow.test\", \"rol\": \"usuario\" }"
+            },
+            "url": "{{base_url}}/users"
+          }
+        },
+        {
+          "name": "Obtener usuario",
+          "request": { "method": "GET", "url": "{{base_url}}/users/USUARIO_ID" }
+        },
+        {
+          "name": "Actualizar usuario",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"nombre\": \"Ana López Cruz\", \"rol\": \"coordinador\" }"
+            },
+            "url": "{{base_url}}/users/USUARIO_ID"
+          }
+        },
+        {
+          "name": "Eliminar usuario",
+          "request": { "method": "DELETE", "url": "{{base_url}}/users/USUARIO_ID" }
+        }
+      ]
+    },
+    {
+      "name": "3. Tareas",
+      "item": [
+        {
+          "name": "Listar tareas",
+          "request": { "method": "GET", "url": "{{base_url}}/tasks" }
+        },
+        {
+          "name": "Crear tarea",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"usuario_id\": \"USUARIO_ID\", \"titulo\": \"Revisar foco El Pajonal\", \"descripcion\": \"Confirmar avance del quechao.\", \"prioridad\": \"alta\" }"
+            },
+            "url": "{{base_url}}/tasks"
+          }
+        },
+        {
+          "name": "Obtener tarea",
+          "request": { "method": "GET", "url": "{{base_url}}/tasks/TAREA_ID" }
+        },
+        {
+          "name": "Actualizar tarea",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"titulo\": \"Revisar foco (prioridad urgente)\", \"prioridad\": \"alta\" }"
+            },
+            "url": "{{base_url}}/tasks/TAREA_ID"
+          }
+        },
+        {
+          "name": "Completar tarea",
+          "request": { "method": "PATCH", "url": "{{base_url}}/tasks/TAREA_ID/complete" }
+        },
+        {
+          "name": "Tareas completadas",
+          "request": { "method": "GET", "url": "{{base_url}}/tasks/completed" }
+        },
+        {
+          "name": "Eliminar tarea",
+          "request": { "method": "DELETE", "url": "{{base_url}}/tasks/TAREA_ID" }
+        }
+      ]
+    },
+    {
+      "name": "4. Usuario: tareas y estadísticas",
+      "item": [
+        {
+          "name": "Tareas de un usuario",
+          "request": { "method": "GET", "url": "{{base_url}}/users/USUARIO_ID/tasks" }
+        },
+        {
+          "name": "Estadísticas del usuario",
+          "request": { "method": "GET", "url": "{{base_url}}/users/USUARIO_ID/stats" }
+        }
+      ]
+    }
+  ]
+}

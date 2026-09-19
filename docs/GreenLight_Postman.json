@@ -1,0 +1,235 @@
+{
+  "info": {
+    "name": "GreenLight API",
+    "description": "GreenLight: Red comunitaria de reporte de quemas y focos de humo (Flask + Supabase). Variables: base_url (http://localhost:5000/api), token (se autocompleta con el login).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5000/api" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Health check",
+          "request": { "method": "GET", "url": "{{base_url}}/health" }
+        },
+        {
+          "name": "Registro",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"nombre\": \"Vecina Nueva\", \"correo\": \"nueva@greenlight.test\", \"contraseña\": \"Vecino123!\", \"comunidad_id\": null }"
+            },
+            "url": "{{base_url}}/auth/registro"
+          }
+        },
+        {
+          "name": "Login (coordinador)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('token', json.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"correo\": \"coordinador@greenlight.test\", \"contraseña\": \"Coordi123!\" }"
+            },
+            "url": "{{base_url}}/auth/login"
+          }
+        },
+        {
+          "name": "Mi perfil (me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/auth/me"
+          }
+        },
+        {
+          "name": "Listar usuarios (coord)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/auth/usuarios"
+          }
+        },
+        {
+          "name": "Cambiar rol de usuario (coord)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"rol\": \"coordinador\" }"
+            },
+            "url": "{{base_url}}/auth/usuarios/USUARIO_ID"
+          }
+        },
+        {
+          "name": "Eliminar usuario (coord)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/auth/usuarios/USUARIO_ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Feed y reportes",
+      "item": [
+        {
+          "name": "Feed (todos)",
+          "request": { "method": "GET", "url": "{{base_url}}/feed" }
+        },
+        {
+          "name": "Feed con filtros",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/feed?tipo_id=1&comunidad_id=COMUNIDAD_ID&estado=activo"
+          }
+        },
+        {
+          "name": "Obtener reporte",
+          "request": { "method": "GET", "url": "{{base_url}}/reportes/REPORTE_ID" }
+        },
+        {
+          "name": "Crear reporte",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"tipo_id\": 2, \"comunidad_id\": null, \"ubicacion_texto\": \"Vereda El Roble, km 4\", \"descripcion\": \"Humo denso saliendo del monte.\" }"
+            },
+            "url": "{{base_url}}/reportes"
+          }
+        },
+        {
+          "name": "Actualizar reporte (autor)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"descripcion\": \"Humo muy denso, pide apoyo.\", \"ubicacion_texto\": \"Vereda El Roble, km 4\" }"
+            },
+            "url": "{{base_url}}/reportes/REPORTE_ID"
+          }
+        },
+        {
+          "name": "Confirmar reporte",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/reportes/REPORTE_ID/confirmar"
+          }
+        },
+        {
+          "name": "Cambiar estado (coord)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"estado\": \"verificado\" }"
+            },
+            "url": "{{base_url}}/reportes/REPORTE_ID/estado"
+          }
+        },
+        {
+          "name": "Eliminar reporte (autor/coord)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/reportes/REPORTE_ID"
+          }
+        },
+        {
+          "name": "Envión offline (sync)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"reportes\": [], \"confirmaciones\": [{ \"reporte_id\": \"REPORTE_ID\" }] }"
+            },
+            "url": "{{base_url}}/sync"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Estadísticas y catálogos",
+      "item": [
+        {
+          "name": "Stats",
+          "request": { "method": "GET", "url": "{{base_url}}/stats" }
+        },
+        {
+          "name": "Comunidades",
+          "request": { "method": "GET", "url": "{{base_url}}/comunidades" }
+        },
+        {
+          "name": "Crear comunidad (coord)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"nombre\": \"Nueva Comunidad\", \"zona_ciudad\": \"Zona Norte\" }"
+            },
+            "url": "{{base_url}}/comunidades"
+          }
+        },
+        {
+          "name": "Eliminar comunidad (coord)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/comunidades/COMUNIDAD_ID"
+          }
+        },
+        {
+          "name": "Tipos de incidente",
+          "request": { "method": "GET", "url": "{{base_url}}/tipo-incidentes" }
+        },
+        {
+          "name": "Crear tipo (coord)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"nombre\": \"Quema Urbana\", \"descripcion\": \"Fuego en zonas urbanas.\", \"icono\": \"🏠\", \"color_etiqueta\": \"#f05a00\" }"
+            },
+            "url": "{{base_url}}/tipo-incidentes"
+          }
+        },
+        {
+          "name": "Eliminar tipo (coord)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/tipo-incidentes/9"
+          }
+        }
+      ]
+    }
+  ]
+}
