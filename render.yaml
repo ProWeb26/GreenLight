@@ -55,3 +55,22 @@ services:
       # Apunta a la URL final del servicio greenlight-api en Render.
       - key: VITE_API_URL
         value: https://greenlight-api.onrender.com/api
+
+  # ---------------------------------------------------------------------------
+  # API simulada: Mini Task Manager (Node.js / Express)
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: mini-task-manager-api
+    runtime: node
+    plan: free
+    rootDir: mini-task-manager/backend
+    healthCheckPath: /api/health
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: "2h"
+      - key: TASK_STORE
+        value: memory
