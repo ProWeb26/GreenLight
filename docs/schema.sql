@@ -87,16 +87,20 @@ CREATE INDEX IF NOT EXISTS idx_confirmacion_reporte ON confirmacion(reporte_id);
 
 -- ---------------------------------------------------------------------------
 -- RLS (opcional; documentación para el rol anon en Supabase)
+-- Idempotente: se puede volver a ejecutar sin error.
 -- ---------------------------------------------------------------------------
 ALTER TABLE reporte ENABLE ROW LEVEL SECURITY;
 ALTER TABLE comunidad ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tipo_incidente ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS reporte_lectura_publica ON reporte;
 CREATE POLICY reporte_lectura_publica ON reporte
     FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS comunidad_lectura_publica ON comunidad;
 CREATE POLICY comunidad_lectura_publica ON comunidad
     FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS tipo_incidente_lectura_publica ON tipo_incidente;
 CREATE POLICY tipo_incidente_lectura_publica ON tipo_incidente
     FOR SELECT USING (true);
