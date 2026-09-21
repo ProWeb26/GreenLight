@@ -54,7 +54,7 @@ services:
     envVars:
       # Apunta a la URL final del servicio greenlight-api en Render.
       - key: VITE_API_URL
-        value: https://greenlight-api.onrender.com/api
+        value: https://greenlight-api-a487.onrender.com/api
 
   # ---------------------------------------------------------------------------
   # API simulada: Mini Task Manager (Node.js / Express)

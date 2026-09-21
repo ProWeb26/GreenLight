@@ -34,7 +34,7 @@ jobs:
         working-directory: frontend
         env:
           VITE_BASE: /GreenLight/
-          VITE_API_URL: https://greenlight-api.onrender.com/api
+          VITE_API_URL: https://greenlight-api-a487.onrender.com/api
         run: npm run build
 
       - name: Fallback SPA (404 -> index.html)

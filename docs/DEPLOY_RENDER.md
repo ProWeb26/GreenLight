@@ -39,7 +39,7 @@ opción). Hay **dos APIs**:
 Verificaciones:
 
 ```powershell
-curl https://greenlight-api.onrender.com/api/health
+curl https://greenlight-api-a487.onrender.com/api/health
 curl https://taskflow-api.onrender.com/api/health
 ```
 
@@ -59,7 +59,7 @@ las rutas SPA (`/feed`, `/reportar`, `/admin`, ...) funcionen al refrescar:
 - `rootDir`: `frontend`
 - Build: `npm install && npm run build`
 - Start: `python server.py`
-- Env var: `VITE_API_URL = https://greenlight-api.onrender.com/api`
+- Env var: `VITE_API_URL = https://greenlight-api-a487.onrender.com/api`
 
 ### Opción B: Cloudflare Pages
 
@@ -67,7 +67,7 @@ las rutas SPA (`/feed`, `/reportar`, `/admin`, ...) funcionen al refrescar:
 2. Repositorio, framework **Vite**, build `npm run build`, output directorio `dist`.
 3. **Variables de entorno** (framework preset), con la URL final de la API:
    ```
-   VITE_API_URL = https://greenlight-api.onrender.com/api
+   VITE_API_URL = https://greenlight-api-a487.onrender.com/api
    ```
 4. **Save and Deploy**. Las rutas SPA (`/feed`, `/reportar`, `/admin`, etc.)
    ya funcionan gracias al archivo `frontend/public/_redirects`.
