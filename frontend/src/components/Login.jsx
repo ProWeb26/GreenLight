@@ -75,7 +75,7 @@ function Login() {
               comunidad_id: form.comunidad_id || undefined,
             })
           : await api.login(form.correo.trim(), form.contraseña)
-      setSession(session)
+      setSession({ token: session.token, user: session.usuario })
       navigate('/feed', { replace: true })
     } catch (err) {
       if (err.status === 403 || err.status === 401) {

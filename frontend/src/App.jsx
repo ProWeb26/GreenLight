@@ -1,8 +1,8 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout.jsx'
 import Login from './components/Login.jsx'
-import { getToken, getUser } from './lib/api.js'
+import { api, clearSession, getToken, getUser, setSession } from './lib/api.js'
 
 const Feed = lazy(() => import('./Feed.jsx'))
 const Reportar = lazy(() => import('./Reportar.jsx'))
@@ -21,6 +21,19 @@ function GuardedAdmin({ children }) {
 
 function App() {
   const alreadyLogged = getToken()
+  const [reparando, setReparando] = useState(Boolean(alreadyLogged && !getUser()))
+
+  useEffect(() => {
+    const token = getToken()
+    if (!token || getUser()) return
+    api
+      .me(token)
+      .then((user) => setSession({ token, user }))
+      .catch(() => clearSession())
+      .finally(() => setReparando(false))
+  }, [])
+
+  if (reparando) return <p className="p-6 text-sm text-texto">Cargando…</p>
 
   return (
     <Suspense fallback={<p className="p-6 text-sm text-texto">Cargando…</p>}>

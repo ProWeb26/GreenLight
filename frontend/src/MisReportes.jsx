@@ -19,7 +19,7 @@ function MisReportes() {
     Promise.all([api.feed(), api.listarTipos()])
       .then(([feed, t]) => {
         setTipos(t)
-        setReportes(feed.filter((r) => r.usuario_id === user.id))
+        setReportes(user ? feed.filter((r) => r.usuario_id === user.id) : [])
       })
       .catch((err) => setError(err.message))
       .finally(() => setCargando(false))

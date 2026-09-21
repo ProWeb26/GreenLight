@@ -15,9 +15,9 @@ export function getUser() {
   }
 }
 
-export function setSession({ token, user }) {
+export function setSession({ token, user, usuario }) {
   localStorage.setItem(TOKEN_KEY, token)
-  localStorage.setItem(USER_KEY, JSON.stringify(user))
+  localStorage.setItem(USER_KEY, JSON.stringify(user ?? usuario ?? null))
 }
 
 export function clearSession() {
