@@ -15,7 +15,7 @@ ambos como entregables de la materia.
 |--------------------|-----------|---------------------------|-------|
 | **GreenLight API** | `backend` | Flask + SQLAlchemy + JWT + Swagger | 41 ✓ |
 | **TaskFlow API**   | `taskflow`| Flask + SQLAlchemy        | 19 ✓ |
-| **GreenLight Web** | `frontend`| React 19 + Vite + Tailwind| lint+build ✓ |
+| **GreenLight Web** | `frontend`| React 19 + Vite + Tailwind + **Leaflet** | lint+build ✓ |
 | Mini Task Manager  | `mini-task-manager` | Node/Express + React (laboratorio) | 21 (Node) |
 
 ## Entidades (GreenLight)
@@ -23,6 +23,12 @@ ambos como entregables de la materia.
 `Usuario` (usuario/coordinador) · `Comunidad` · `TipoIncidente` ·
 `Reporte` (activo → confirmado_comunidad con umbral 3 → verificado) ·
 `Confirmacion` (+1 por usuario).
+
+## Mapa (Leaflet)
+
+- Ruta `/mapa`: mapa con los focos con coordenadas (marcadores por estado, popups
+  con detalle, filtro por tipo, capa opcional de comunidades).
+- En "Reportar" el marcador se coloca con un clic en el mapa o con "Usar mi ubicación".
 
 ## Requisitos
 

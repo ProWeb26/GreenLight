@@ -31,7 +31,7 @@ services:
       - key: SUPABASE_KEY
         sync: false
       - key: CORS_ORIGINS
-        value: "https://greenlight-web.onrender.com"
+        value: "https://proweb26.github.io"
 
   # ---------------------------------------------------------------------------
   # API complementaria: TaskFlow (Plan de Pruebas Postman)
