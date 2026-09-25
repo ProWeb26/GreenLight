@@ -3,17 +3,20 @@ from flask import Blueprint, request, g, jsonify
 import services
 from auth import token_requerido, rol_requerido
 from models import Usuario
+from rate_limit import limiter, RATE_LIMIT_AUTH
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
 
 @auth_bp.post("/registro")
+@limiter.limit(RATE_LIMIT_AUTH)
 def registro():
     respuesta = services.registrar_usuario(request.get_json(silent=True) or {})
     return jsonify(respuesta), 201
 
 
 @auth_bp.post("/login")
+@limiter.limit(RATE_LIMIT_AUTH)
 def login():
     respuesta = services.iniciar_sesion(request.get_json(silent=True) or {})
     return jsonify(respuesta), 200

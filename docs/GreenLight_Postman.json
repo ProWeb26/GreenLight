@@ -19,8 +19,16 @@
       "name": "1. Health",
       "item": [
         {
-          "name": "Health check",
+          "name": "Health check (/api/health)",
           "request": { "method": "GET", "url": "{{base_url}}/health" }
+        },
+        {
+          "name": "Salud (/api/salud - healthcheck Render)",
+          "request": { "method": "GET", "url": "{{base_url}}/salud" }
+        },
+        {
+          "name": "Swagger (/api/docs - documentación)",
+          "request": { "method": "GET", "url": "http://localhost:5000/api/docs" }
         }
       ]
     },
@@ -336,6 +344,73 @@
             "method": "DELETE",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": "{{base_url}}/tipo-incidentes/{{tipo_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Seguridad JWT (401/403)",
+      "item": [
+        {
+          "name": "Sin token -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Sin token responde 401', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/auth/me"
+          }
+        },
+        {
+          "name": "Token alterado -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Token alterado responde 401', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}x" }],
+            "url": "{{base_url}}/auth/me"
+          }
+        },
+        {
+          "name": "Ruta de coordinador como usuario común -> 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Ruta exclusiva de coordinador responde 403', () => {",
+                  "  pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_maria}}" }],
+            "url": "{{base_url}}/auth/usuarios"
           }
         }
       ]

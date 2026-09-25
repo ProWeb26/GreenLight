@@ -29,4 +29,4 @@ def test_sincronizar_sin_datos(cliente):
 
 def test_sincronizar_requiere_autenticacion(cliente):
     respuesta = cliente.post("/api/sync", json={"reportes": []})
-    assert respuesta.status_code == 403
+    assert respuesta.status_code == 401

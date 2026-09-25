@@ -25,6 +25,9 @@ class Config:
     CONFIRMATION_THRESHOLD = int(os.getenv("CONFIRMATION_THRESHOLD", "3"))
     JSON_AS_ASCII = False
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024
+    CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*")
+    RATE_LIMIT_DEFAULT = os.getenv("RATE_LIMIT_DEFAULT", "2000 per hour")
+    RATE_LIMIT_AUTH = os.getenv("RATE_LIMIT_AUTH", "30 per minute")
 
 
 class TestConfig(Config):

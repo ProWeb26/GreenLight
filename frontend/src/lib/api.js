@@ -46,7 +46,10 @@ async function request(path, { method = 'GET', body, token } = {}) {
   if (!res.ok) {
     const err = new Error(result.error || 'Error del servidor.')
     err.status = res.status
-    if (res.status === 401 && token) clearSession()
+    if (res.status === 401 && token) {
+      clearSession()
+      if (window.location.pathname !== '/login') window.location.href = '/login'
+    }
     throw err
   }
 

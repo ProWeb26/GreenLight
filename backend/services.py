@@ -15,6 +15,10 @@ class ErrorValidacion(Exception):
 
 
 class ErrorNoAutorizado(Exception):
+    status = 401
+
+
+class ErrorProhibido(Exception):
     status = 403
 
 
@@ -150,7 +154,7 @@ def obtener_reporte(reporte_id):
 
 def actualizar_reporte(usuario, reporte, datos):
     if not (usuario.rol == "coordinador" or reporte.usuario_id == usuario.id):
-        raise ErrorNoAutorizado("Solo el autor o el coordinador pueden editar este reporte")
+        raise ErrorProhibido("Solo el autor o el coordinador pueden editar este reporte")
 
     if "descripcion" in datos:
         descripcion = (datos.get("descripcion") or "").strip()
@@ -176,7 +180,7 @@ def actualizar_reporte(usuario, reporte, datos):
 
 def eliminar_reporte(usuario, reporte):
     if not (usuario.rol == "coordinador" or reporte.usuario_id == usuario.id):
-        raise ErrorNoAutorizado("Solo el autor o el coordinador pueden eliminar este reporte")
+        raise ErrorProhibido("Solo el autor o el coordinador pueden eliminar este reporte")
     db.session.delete(reporte)
     db.session.commit()
 
@@ -202,7 +206,7 @@ def confirmar_reporte(usuario, reporte):
 
 def cambiar_estado(usuario, reporte, estado):
     if usuario.rol != "coordinador":
-        raise ErrorNoAutorizado("Solo el coordinador puede cambiar el estado")
+        raise ErrorProhibido("Solo el coordinador puede cambiar el estado")
     if estado not in Reporte.ESTADOS:
         raise ErrorValidacion("Estado inválido")
     reporte.estado = estado

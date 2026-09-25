@@ -13,7 +13,7 @@ ambos como entregables de la materia.
 
 | Módulo             | Carpeta   | Stack                     | Tests |
 |--------------------|-----------|---------------------------|-------|
-| **GreenLight API** | `backend` | Flask + SQLAlchemy + JWT  | 35 ✓ |
+| **GreenLight API** | `backend` | Flask + SQLAlchemy + JWT + Swagger | 41 ✓ |
 | **TaskFlow API**   | `taskflow`| Flask + SQLAlchemy        | 19 ✓ |
 | **GreenLight Web** | `frontend`| React 19 + Vite + Tailwind| lint+build ✓ |
 | Mini Task Manager  | `mini-task-manager` | Node/Express + React (laboratorio) | 21 (Node) |
@@ -63,14 +63,35 @@ npm run dev                    # http://localhost:5173
 ## Verificación
 
 ```powershell
-cd backend && python -m pytest        # 35 verdes
+cd backend && python -m pytest        # 41 verdes
 cd taskflow && python -m pytest       # 19 verdes
 cd frontend && npm run lint && npm run build
 ```
 
+## Documentación Swagger
+
+Con el backend corriendo, abre:
+
+- **Swagger UI**: `http://localhost:5000/api/docs`
+- Spec OpenAPI (YAML): `http://localhost:5000/api/openapi.yaml`
+
+## Seguridad: JWT + RLS (Supabase)
+
+- Autenticación JWT (Bearer) con roles `usuario`/`coordinador`; errores 401
+  (token) vs 403 (permiso).
+- RLS con política por operación (`SELECT/INSERT/UPDATE/DELETE`, `using` vs
+  `with check`): `backend/sql/01_esquema_y_rls.sql` — termina verificando
+  `rowsecurity = true` y las 9 políticas.
+- Consultas en nombre del usuario: `backend/supabase_client.py`
+  (`cliente_usuario(token)`, nunca `service_role`).
+- Rate limiting por IP (`Flask-Limiter`, más estricto en login/registro) y
+  CORS configurable por `CORS_ORIGINS`.
+- Checklist JWT + RLS automatizado: `python backend/scripts/demo_rls.py <URL>`.
+- Checklist OWASP: `docs/CHECKLIST_OWASP.md`.
+
 ## Docs
 
-- `docs/DEPLOY_RENDER.md` — Render (Flask/gunicorn) + Supabase + Cloudflare Pages.
+- `docs/DEPLOY_RENDER.md` — Render (gunicorn `wsgi:app`) + Supabase (RLS) + Cloudflare Pages.
 - `docs/schema.sql` y `docs/schema_taskflow.sql` — esquemas PostgreSQL/Supabase.
 - `docs/GreenLight_Postman.json` y `docs/TaskFlow_Postman.json` — colecciones Postman.
 - `docs/TEST_CASES.md` y `docs/PERFORMANCE_ACCESSIBILITY.md` — pruebas y

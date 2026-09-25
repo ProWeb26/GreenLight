@@ -1,8 +1,8 @@
 -- GreenLight: Red comunitaria de reporte de quemas y focos de humo (offline-first)
 -- Esquema para PostgreSQL / Supabase. La API Flask la crea automáticamente con
 -- db.create_all(); este script es la versión declarativa para el SQL Editor.
--- La API se conecta con el rol service_role (RLS no aplica): las políticas son
--- documentación de seguridad para cuando se use el rol anon/authenticated.
+-- Para la capa de RLS (Supabase) con políticas por operación usando
+-- auth.uid(), mira backend/sql/01_esquema_y_rls.sql.
 -- IMPORTANTE: los IDs se guardan como VARCHAR(36) porque así los definen los
 -- modelos de SQLAlchemy (String(36)); no usar columnas UUID.
 

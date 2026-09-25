@@ -4,7 +4,7 @@ from flask import request, g
 
 from models import Usuario
 from extensions import db
-from services import decodificar_token, ErrorNoAutorizado
+from services import decodificar_token, ErrorNoAutorizado, ErrorProhibido
 
 
 def _cargar_usuario():
@@ -33,7 +33,7 @@ def rol_requerido(*roles):
         def envoltura(*args, **kwargs):
             usuario = g.get("usuario") or _cargar_usuario()
             if usuario.rol not in roles:
-                raise ErrorNoAutorizado("No tienes permiso para esta acción")
+                raise ErrorProhibido("No tienes permiso para esta acción")
             g.usuario = usuario
             return f(*args, **kwargs)
 

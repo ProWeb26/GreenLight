@@ -1,13 +1,15 @@
 import os
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
+from flask_swagger_ui import get_swaggerui_blueprint
 from dotenv import load_dotenv
 
 from extensions import db
 from services import (
     ErrorValidacion,
     ErrorNoAutorizado,
+    ErrorProhibido,
     ErrorNoEncontrado,
     ErrorConflicto,
 )
@@ -16,8 +18,18 @@ from routes_auth import auth_bp
 from routes_reportes import reportes_bp
 from routes_admin import admin_bp
 from routes_sync import sync_bp
+from rate_limit import limiter
+
+RUTA_BACKEND = os.path.dirname(os.path.abspath(__file__))
 
 load_dotenv()
+
+
+def _origenes_cors(valor):
+    """Acepta '*' o una lista de orígenes separados por coma."""
+    if valor == "*":
+        return "*"
+    return [o.strip() for o in valor.split(",") if o.strip()]
 
 
 def create_app(config_object=None):
@@ -26,13 +38,50 @@ def create_app(config_object=None):
         config_object = os.getenv("FLASK_CONFIG", "config.Config")
     app.config.from_object(config_object)
 
-    CORS(app, origins="*")
+    CORS(app, origins=_origenes_cors(app.config.get("CORS_ORIGINS", "*")))
     db.init_app(app)
+
+    limiter.init_app(app)
+    if app.config.get("TESTING"):
+        limiter.enabled = False
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(reportes_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(sync_bp)
+
+    swagger_ui_bp = get_swaggerui_blueprint(
+        "/api/docs",
+        "/api/openapi.yaml",
+        config={"app_name": "GreenLight API"},
+    )
+    app.register_blueprint(swagger_ui_bp, url_prefix="/api/docs")
+
+    @app.get("/api/openapi.yaml")
+    def spec_openapi():
+        return send_from_directory(
+            RUTA_BACKEND, "openapi.yaml", mimetype="application/yaml"
+        )
+
+    @app.get("/api/salud")
+    def salud():
+        from sqlalchemy import text
+
+        try:
+            db.session.execute(text("SELECT 1"))
+            database = "connected"
+        except Exception:
+            database = "error"
+        return (
+            jsonify(
+                {
+                    "status": "ok" if database == "connected" else "degraded",
+                    "database": database,
+                    "project": "GreenLight",
+                }
+            ),
+            200 if database == "connected" else 503,
+        )
 
     @app.get("/api/health")
     def health():
@@ -51,6 +100,10 @@ def create_app(config_object=None):
 
     @app.errorhandler(ErrorNoAutorizado)
     def _no_autorizado(e):
+        return jsonify({"error": str(e)}), e.status
+
+    @app.errorhandler(ErrorProhibido)
+    def _prohibido(e):
         return jsonify({"error": str(e)}), e.status
 
     @app.errorhandler(ErrorNoEncontrado)

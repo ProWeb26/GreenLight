@@ -21,25 +21,41 @@ Usuarios de GreenLight: `coordinador@greenlight.test / Coordi123!`,
 - `docs/TaskFlow_Postman.json`: health, users CRUD, tasks CRUD, complete,
   completed, tasks del usuario, stats.
 
-## Casos automatizados (GreenLight — 35)
+## Casos automatizados (GreenLight — 41)
 
-1. Health check `200` con `database: connected`.
+1. Health check `200` con `database: connected`; `/salud` `200`; Swagger
+   `/api/docs` `200` y `/api/openapi.yaml` `200`.
 2. Registro: éxito `201` (token + usuario), correo duplicado `409`, correo
    inválido `422`, contraseña corta `422`.
-3. Login: éxito `200`, credenciales incorrectas `403`, campo faltante `422`.
-4. `/auth/me`: válido `200`, sin token `401`, token inválido `401`.
+3. Login: éxito `200`, credenciales incorrectas `401`, campo faltante `422`.
+4. `/auth/me`: válido `200`, sin token `401`, token alterado `401`, token vacío
+   `401`.
 5. `/auth/usuarios`: como coordinador `200`, como usuario `403`, sin token `401`.
 6. Feed: público `200`; filtros por `tipo_id`, `comunidad_id`, `estado`.
-7. Reportes: crear `201` (slugs únicos `ECO-####`), título/descripción validados
-   `422`, reporte inexistente `404`.
-8. Actualizar reporte: autor `200`, otro usuario `403`, desconocido `404`.
-9. Eliminar reporte: autor/coordinador `200`, sin permiso `403`.
-10. Confirmar: sumar `+1`, repetir `409`, umbral 3 promueve a
+7. Reportes: crear `201` (slugs únicos `ECO-####`), descripción validados
+   `422`, reporte inexistente `404`, crear sin token `401`.
+8. El `user_id` enviado en el body de POST `/reportes` se ignora (el autor
+   siempre sale del token): una usuaria no puede crear a nombre de otra.
+9. Actualizar reporte: autor `200`, otro usuario `403`, desconocido `404`.
+10. Eliminar reporte: autor/coordinador `200`, sin permiso `403`.
+11. Confirmar: sumar `+1`, repetir `409`, umbral 3 promueve a
     `confirmado_comunidad`.
-11. Cambiar estado: solo coordinador `200`, usuario `403`, estado inválido `422`.
-12. `/sync`: envía reportes + confirmaciones en lote `201`.
-13. `/stats`: `200` con totales.
-14. Comunidades y tipo-incidentes: lectura pública; escritura solo coordinador.
+12. Cambiar estado: solo coordinador `200`, usuario `403`, estado inválido `422`.
+13. `/sync`: envía reportes + confirmaciones en lote `201`; sin token `401`.
+14. `/stats`: `200` con totales.
+15. Comunidades y tipo-incidentes: lectura pública; escritura solo coordinador.
+16. Checklist JWT + RLS: `python backend/scripts/demo_rls.py <URL>` — sin token
+    `401`, tokens de Ana/Beto, token alterado `401`, perfil con su correo,
+    crear `201`, editar/borrar/cambiar estado del reporte ajeno `403`, no se
+    puede suplantar `user_id`, el dueño borra su reporte `200`.
+
+## Checklist RLS (Supabase, se verifica en el SQL Editor)
+
+Ejecutar `backend/sql/01_esquema_y_rls.sql` y confirmar la salida final:
+
+- `rowsecurity = t` en las tablas `reporte`, `confirmacion`, `tipo_incidente`.
+- 9 políticas listadas (4 reporte + 4 confirmacion + 1 pública) con
+  `qual`/`with_check` basadas en `auth.uid()`.
 
 ## Casos automatizados (TaskFlow — 19)
 

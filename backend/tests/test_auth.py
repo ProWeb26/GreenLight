@@ -41,9 +41,22 @@ def test_login_fallido(cliente):
     respuesta = cliente.post(
         "/api/auth/login", json={"correo": "maria@test.com", "contraseña": "incorrecta"}
     )
-    assert respuesta.status_code == 403
+    assert respuesta.status_code == 401
 
 
 def test_me_sin_token(cliente):
     respuesta = cliente.get("/api/auth/me")
-    assert respuesta.status_code == 403
+    assert respuesta.status_code == 401
+
+
+def test_me_token_alterado(cliente):
+    token = login(cliente, "maria@test.com", "Vecino123!")
+    respuesta = cliente.get(
+        "/api/auth/me", headers={"Authorization": f"Bearer {token}x"}
+    )
+    assert respuesta.status_code == 401
+
+
+def test_me_token_vacio(cliente):
+    respuesta = cliente.get("/api/auth/me", headers={"Authorization": "Bearer "})
+    assert respuesta.status_code == 401

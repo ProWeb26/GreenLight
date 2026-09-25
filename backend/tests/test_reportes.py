@@ -29,7 +29,26 @@ def test_crear_reporte_requiere_token(cliente):
         "/api/reportes",
         json={"tipo_id": 1, "descripcion": "Reporte sin autenticación"},
     )
-    assert respuesta.status_code == 403
+    assert respuesta.status_code == 401
+
+
+def test_crear_reporte_ignora_user_id_del_body(cliente):
+    token_maria = login(cliente, "maria@test.com", "Vecino123!")
+    autor_otro = cliente.post(
+        "/api/auth/login",
+        json={"correo": "vecino1@test.com", "contraseña": "Vecino123!"},
+    ).get_json()["usuario"]["id"]
+    respuesta = cliente.post(
+        "/api/reportes",
+        json={
+            "tipo_id": 1,
+            "descripcion": "Intento de crear reporte a nombre de otro",
+            "usuario_id": autor_otro,
+        },
+        headers={"Authorization": f"Bearer {token_maria}"},
+    )
+    assert respuesta.status_code == 201
+    assert respuesta.get_json()["usuario_id"] != autor_otro
 
 
 def test_feed_publico_tras_crear(cliente):

@@ -1,7 +1,8 @@
 # Blueprint de Render para GreenLight
 # Servicios web Flask (gunicorn) + frontend estático.
 # En Render: New > Blueprint > seleccionar el repositorio > Apply.
-# Para usar Supabase: configura DATABASE_URL (Session pooler) en cada servicio.
+# Para usar Supabase: configura DATABASE_URL (Session pooler), SUPABASE_URL y
+# SUPABASE_KEY en cada servicio. Healthcheck: /api/salud.
 # El frontend también puede desplegarse en Cloudflare Pages (ver docs/DEPLOY_RENDER.md).
 
 services:
@@ -13,9 +14,9 @@ services:
     runtime: python
     plan: free
     rootDir: backend
-    healthCheckPath: /api/health
+    healthCheckPath: /api/salud
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn "app:app" --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
       - key: SECRET_KEY
         generateValue: true
@@ -25,6 +26,12 @@ services:
         value: "3"
       - key: DATABASE_URL
         sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: "https://greenlight-web.onrender.com"
 
   # ---------------------------------------------------------------------------
   # API complementaria: TaskFlow (Plan de Pruebas Postman)
