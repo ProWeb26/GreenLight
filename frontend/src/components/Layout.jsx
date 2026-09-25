@@ -7,7 +7,7 @@ import {
   estaEnLinea,
   sincronizarCola,
 } from '../lib/offline.js'
-import { IconChart, IconClipboard, IconFlame, IconLogout, IconPlus, IconRefresh, Logo } from './Icons.jsx'
+import { IconChart, IconClipboard, IconFlame, IconLogout, IconMap, IconPlus, IconRefresh, Logo } from './Icons.jsx'
 
 const navClass = ({ isActive }) =>
   `flex items-center gap-2 px-3 py-2 text-sm transition-colors border-l-2 ${
@@ -137,6 +137,10 @@ function Layout() {
             <NavLink to="/reportar" className={navClass}>
               <IconPlus />
               Reportar
+            </NavLink>
+            <NavLink to="/mapa" className={navClass}>
+              <IconMap />
+              Mapa
             </NavLink>
             <NavLink to="/mis-reportes" className={navClass}>
               <IconClipboard />

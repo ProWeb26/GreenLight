@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, getToken, getUser } from './lib/api.js'
 import Field from './components/Field.jsx'
+import MapaLugar from './components/MapaLugar.jsx'
 import { agregarPendiente, estaEnLinea } from './lib/offline.js'
 import { validarDescripcion, validarUbicacion } from './lib/validation.js'
 
-const vacio = { tipo_id: '', comunidad_id: '', ubicacion_texto: '', descripcion: '' }
+const vacio = { tipo_id: '', comunidad_id: '', ubicacion_texto: '', descripcion: '', latitud: '', longitud: '' }
 
 function Reportar() {
   const navigate = useNavigate()
@@ -38,6 +39,10 @@ function Reportar() {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }))
   }
 
+  const setCoordenadas = (lat, lon) => {
+    setForm((prev) => ({ ...prev, latitud: lat, longitud: lon }))
+  }
+
   const validate = () => {
     const next = {}
     if (!form.tipo_id) next.tipo_id = 'Selecciona el tipo de incidente.'
@@ -60,6 +65,8 @@ function Reportar() {
       comunidad_id: form.comunidad_id || undefined,
       ubicacion_texto: form.ubicacion_texto.trim(),
       descripcion: form.descripcion.trim(),
+      latitud: form.latitud === '' || form.latitud === undefined ? undefined : Number(form.latitud),
+      longitud: form.longitud === '' || form.longitud === undefined ? undefined : Number(form.longitud),
     }
 
     if (!estaEnLinea()) {
@@ -149,6 +156,12 @@ function Reportar() {
           error={errors.ubicacion_texto}
           placeholder="Ej. Vereda El Roble, km 4"
           hint="Puede ser una referencia conocida por la comunidad o coordenadas."
+        />
+
+        <MapaLugar
+          latitud={form.latitud === '' ? undefined : Number(form.latitud)}
+          longitud={form.longitud === '' ? undefined : Number(form.longitud)}
+          onChange={setCoordenadas}
         />
 
         <Field

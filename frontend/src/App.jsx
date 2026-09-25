@@ -6,6 +6,7 @@ import { api, clearSession, getToken, getUser, setSession } from './lib/api.js'
 
 const Feed = lazy(() => import('./Feed.jsx'))
 const Reportar = lazy(() => import('./Reportar.jsx'))
+const Mapa = lazy(() => import('./Mapa.jsx'))
 const MisReportes = lazy(() => import('./MisReportes.jsx'))
 const Admin = lazy(() => import('./Admin.jsx'))
 
@@ -51,6 +52,7 @@ function App() {
           <Route index element={<Navigate to="/feed" replace />} />
           <Route path="feed" element={<Feed />} />
           <Route path="reportar" element={<Reportar />} />
+          <Route path="mapa" element={<Mapa />} />
           <Route path="mis-reportes" element={<MisReportes />} />
           <Route
             path="admin"

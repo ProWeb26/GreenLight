@@ -80,11 +80,15 @@ REPORTES = [
         "descripcion": "Humo denso saliendo del monte, a unos 300 m de la vereda.",
         "ubicacion_texto": "Vereda El Roble, km 4",
         "estado": "activo",
+        "latitud": -17.7751,
+        "longitud": -63.2012,
     },
     {
         "descripcion": "Quechao de restos de cosecha en la llanura.",
         "ubicacion_texto": "Zona El Pajonal",
         "estado": "confirmado_comunidad",
+        "latitud": -17.732,
+        "longitud": -63.098,
     },
 ]
 
@@ -125,6 +129,8 @@ def inicializar():
                     tipo_id=tipos[i % len(tipos)].id,
                     descripcion=datos["descripcion"],
                     ubicacion_texto=datos["ubicacion_texto"],
+                    latitud=datos.get("latitud"),
+                    longitud=datos.get("longitud"),
                     estado=datos["estado"],
                     slug_url=f"ECO-{1000 + i * 3:04d}",
                 )
