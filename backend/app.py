@@ -63,6 +63,19 @@ def create_app(config_object=None):
             RUTA_BACKEND, "openapi.yaml", mimetype="application/yaml"
         )
 
+    @app.get("/")
+    def raiz():
+        return jsonify(
+            {
+                "api": "GreenLight API",
+                "version": "3.0.3",
+                "documentacion": "/api/docs",
+                "espec": "/api/openapi.yaml",
+                "salud": "/api/salud",
+                "endpoints": ["/api/auth/*", "/api/reportes", "/api/feed"],
+            }
+        )
+
     @app.get("/api/salud")
     def salud():
         from sqlalchemy import text
@@ -113,6 +126,10 @@ def create_app(config_object=None):
     @app.errorhandler(ErrorConflicto)
     def _conflicto(e):
         return jsonify({"error": str(e)}), e.status
+
+    @app.errorhandler(404)
+    def _no_encontrado_ruta(e):
+        return jsonify({"error": "Recurso no encontrado"}), 404
 
     @app.errorhandler(Exception)
     def _inesperado(e):

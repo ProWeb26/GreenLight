@@ -43,3 +43,17 @@ def test_comunidades_publicas(cliente):
     respuesta = cliente.get("/api/comunidades")
     assert respuesta.status_code == 200
     assert respuesta.get_json()[0]["nombre"] == "Comunidad Test"
+
+
+def test_raiz_no_es_error(cliente):
+    respuesta = cliente.get("/")
+    assert respuesta.status_code == 200
+    cuerpo = respuesta.get_json()
+    assert "api" in cuerpo
+    assert "documentacion" in cuerpo
+
+
+def test_ruta_inexistente_404(cliente):
+    respuesta = cliente.get("/ruta/que/no/existe")
+    assert respuesta.status_code == 404
+    assert respuesta.get_json()["error"] == "Recurso no encontrado"
