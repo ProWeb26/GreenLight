@@ -85,6 +85,7 @@ export const api = {
     request(`/reportes/${id}/estado`, { method: 'PATCH', body: { estado }, token }),
   sincronizar: (token, cuerpo) => request('/sync', { method: 'POST', body: cuerpo, token }),
   stats: () => request('/stats'),
+  sostenibilidad: () => request('/sostenibilidad'),
 
   listarComunidades: () => request('/comunidades'),
   listarTipos: () => request('/tipo-incidentes'),

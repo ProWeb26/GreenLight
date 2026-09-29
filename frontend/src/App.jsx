@@ -9,6 +9,7 @@ const Reportar = lazy(() => import('./Reportar.jsx'))
 const Mapa = lazy(() => import('./Mapa.jsx'))
 const MisReportes = lazy(() => import('./MisReportes.jsx'))
 const Admin = lazy(() => import('./Admin.jsx'))
+const Sostenibilidad = lazy(() => import('./Sostenibilidad.jsx'))
 
 function Protected({ children }) {
   return getToken() ? children : <Navigate to="/login" replace />
@@ -54,6 +55,7 @@ function App() {
           <Route path="reportar" element={<Reportar />} />
           <Route path="mapa" element={<Mapa />} />
           <Route path="mis-reportes" element={<MisReportes />} />
+          <Route path="sostenibilidad" element={<Sostenibilidad />} />
           <Route
             path="admin"
             element={

@@ -25,6 +25,8 @@ tags:
     description: Comunidades y tipos de incidente (coordinador)
   - name: Sincronización
     description: Lote offline-first
+  - name: Sostenibilidad
+    description: Tablero de métricas de sostenibilidad (presupuesto vs. medido)
 security:
   - bearerAuth: []
 paths:
@@ -449,6 +451,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Stats'
+  /api/sostenibilidad:
+    get:
+      tags: [Sostenibilidad]
+      summary: Tablero de métricas de sostenibilidad
+      description: >
+        Devuelve el presupuesto fijado por la consigna (peso de página, Lighthouse
+        mínimo, WCAG, costo en Bs) junto con lo medido en el despliegue real: uptime
+        del proceso, latencia de la base de datos, costo y licencias, controles de
+        seguridad activos y distribución operativa de los reportes. Es público para
+        que la comunidad pueda auditar el cumplimiento sin iniciar sesión.
+      operationId: sostenibilidad
+      security: []
+      responses:
+        '200':
+          description: Métricas de sostenibilidad
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sostenibilidad'
   /api/comunidades:
     get:
       tags: [Admin]
@@ -898,3 +919,73 @@ components:
           type: object
         por_tipo:
           type: object
+    Sostenibilidad:
+      type: object
+      properties:
+        generado:
+          type: string
+          format: date-time
+        proyecto:
+          type: string
+        version:
+          type: string
+        entorno:
+          type: string
+        uptime:
+          type: object
+          properties:
+            segundos:
+              type: integer
+            texto:
+              type: string
+        base_datos:
+          type: object
+          properties:
+            estado:
+              type: string
+              enum: [connected, error]
+            latencia_ms:
+              type: number
+              nullable: true
+        presupuesto:
+          type: object
+          properties:
+            peso_pagina_kb:
+              type: integer
+            lighthouse_minimo:
+              type: integer
+            wcag:
+              type: string
+            costo_infraestructura_bs:
+              type: integer
+        impacto:
+          type: object
+          properties:
+            costo_infraestructura_bs:
+              type: integer
+            licencias_propietarias:
+              type: integer
+            licencias:
+              type: array
+              items:
+                type: object
+                properties:
+                  componente:
+                    type: string
+                  licencia:
+                    type: string
+        operacion:
+          $ref: '#/components/schemas/Stats'
+        seguridad:
+          type: object
+          properties:
+            jwt_expiracion_minutos:
+              type: integer
+            umbral_confirmacion:
+              type: integer
+            rate_limit_auth:
+              type: string
+            cors_origins:
+              type: string
+            rls_supabase:
+              type: string

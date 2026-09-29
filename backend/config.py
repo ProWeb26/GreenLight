@@ -28,6 +28,7 @@ class Config:
     CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*")
     RATE_LIMIT_DEFAULT = os.getenv("RATE_LIMIT_DEFAULT", "2000 per hour")
     RATE_LIMIT_AUTH = os.getenv("RATE_LIMIT_AUTH", "30 per minute")
+    APP_VERSION = os.getenv("APP_VERSION", "3.0.3")
 
 
 class TestConfig(Config):

@@ -1,18 +1,52 @@
-# Despliegue de GreenLight (Flask + Supabase)
+# Despliegue de GreenLight (Render + GitHub Pages + Supabase)
 
 El backend definitivo de la materia es **Flask** (gunicorn en Render) y el
-frontend **React + Vite** se publica en Render con `frontend/server.py` (SPA
-con fallback a `index.html`; Cloudflare Pages también está documentado como
-opción). Hay **dos APIs**:
+frontend **React + Vite** se publica en **GitHub Pages** con
+`.github/workflows/deploy-pages.yml` (Cloudflare Pages y Render como alternativas
+documentadas abajo). Hay **dos APIs**:
 
 | Servicio         | Carpeta   | Tec | Descripción                         |
 |------------------|-----------|-----|-------------------------------------|
 | `greenlight-api` | `backend` | Flask | GreenLight: reporte de quemas (auth JWT) |
-| `taskflow-api`   | `taskflow`| Flask | TaskFlow: tareas por usuario (Plan Postman) |
-| `greenlight-web` | `frontend`| React | Frontend GreenLight (Vite + Tailwind) |
+| `taskflow-api`   | `taskflow`| Flask | TaskFlow: tareas por usuario (Plan Postman), opcional |
 
-> El blueprint `render.yaml` de la raíz crea `greenlight-api`, `taskflow-api` y
-> `greenlight-web` si se usa Render para todo.
+---
+
+## 0. Estado verificado del despliegue (29/09/2026)
+
+| Componente | URL | Estado |
+|------------|-----|--------|
+| API GreenLight (Render) | `https://greenlight-api-a487.onrender.com/api` | ✅ 200, base de datos `connected` |
+| Frontend (GitHub Pages) | `https://proweb26.github.io/GreenLight/` | ✅ 200 |
+| Tablero de sostenibilidad | `https://proweb26.github.io/GreenLight/sostenibilidad` | ✅ ruta `/sostenibilidad` |
+| Swagger UI | `https://greenlight-api-a487.onrender.com/api/docs` | ✅ |
+| Frontend (Render static) | `https://greenlight-web.onrender.com` | ⚠️ declarado en `render.yaml`, **pendiente de aplicar** |
+| `taskflow-api` (Render) | — | ⚠️ declarado en `render.yaml`, opcional |
+| `mini-task-manager-api` | — | No creado; laboratorio de clase |
+
+### Cerrar el requisito "producción en Render o Cloudflare"
+
+La consigna pide el despliegue en **Render o Cloudflare**. El frontend ya está
+publicado en GitHub Pages, que es un hosting válido pero no es ninguno de los dos
+nombrados. Para cumplir al pie de la letra hay dos caminos, ambos con la config
+ya lista en el repo:
+
+**Camino A — Render (recomendado, un clic).** `render.yaml` declara `greenlight-web`
+como `static_site`. En [render.com](https://render.com) → **New → Blueprint** →
+selecciona el repo → **Apply**. Se crean `greenlight-api`, `greenlight-web` y
+`taskflow-api`, y el frontend queda en `https://greenlight-web.onrender.com`.
+Después solo hay que añadir `https://greenlight-web.onrender.com` a `CORS_ORIGINS`
+del API (ya viene en el blueprint) y hacer *Deploy latest commit*.
+
+**Camino B — Cloudflare Pages.** Instrucciones en la sección 3, opción C. Requiere
+conectar el repo en el panel de Cloudflare; no se puede hacer por API sin tu
+cuenta.
+
+> Si prefieres quedarte solo con GitHub Pages, dilo y quito `greenlight-web` del
+> blueprint; pero entonces el frontend no está en Render ni en Cloudflare.
+
+`GET /api` devuelve 404 a propósito: no hay índice en el prefijo. Los puntos de
+entrada son `/`, `/api/salud`, `/api/sostenibilidad`, `/api/docs` y `/api/feed`.
 
 ---
 
@@ -70,26 +104,51 @@ cd backend && python scripts/demo_rls.py https://greenlight-api-a487.onrender.co
 
 ## 3. Publicar el frontend
 
-### Opción A (recomendada): web service en Render con SPA fallback
+### Opción A (la que está en producción): GitHub Pages
+
+El workflow `.github/workflows/deploy-pages.yml` dispara en cada `push` a `main` o
+`dev` y publica `frontend/dist` en `https://proweb26.github.io/GreenLight/`:
+
+1. En el repositorio, **Settings → Pages → Source → GitHub Actions**.
+2. El `base` de Vite y la URL de la API viajan como variables del workflow:
+   ```yaml
+   env:
+     VITE_BASE: /GreenLight/
+     VITE_API_URL: https://greenlight-api-a487.onrender.com/api
+   ```
+3. Como `base` es un subdirectorio, `CORS_ORIGINS` en el API debe permitir
+   `https://proweb26.github.io` (**sin** la ruta `/GreenLight/`), porque el origen
+   no incluye la ruta.
+4. El SPA fallback se resuelve copiando `index.html` a `404.html` en el mismo paso.
+5. `npm run build` ya incluye la medición de peso, así que `dist/metricas-build.json`
+   se publica en cada despliegue y el tablero `/sostenibilidad` siempre está al día.
+
+> El origen de GitHub Pages es `https://proweb26.github.io`; `https://proweb26.github.io/`
+   devuelve 404 porque el sitio vive bajo `/GreenLight/`.
+
+### Opción B: web service en Render con SPA fallback
 
 Un web service en Render sirve `frontend/dist` con `frontend/server.py` (Python,
-sin dependencias), devolviendo `index.html` en las rutas desconocidas para que
-las rutas SPA (`/feed`, `/reportar`, `/admin`, ...) funcionen al refrescar:
+sin dependencias), devolviendo `index.html` en las rutas desconocidas:
 
 - `rootDir`: `frontend`
 - Build: `npm install && npm run build`
 - Start: `python server.py`
 - Env var: `VITE_API_URL = https://greenlight-api-a487.onrender.com/api`
+- Y en el API, `CORS_ORIGINS` debe incluir `https://<nombre>.onrender.com`
 
-### Opción B: Cloudflare Pages
+Está comentada en `render.yaml` para no duplicar el despliegue.
+
+### Opción C: Cloudflare Pages
 
 1. En [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages → Create → Pages → Connect to Git**.
-2. Repositorio, framework **Vite**, build `npm run build`, output directorio `dist`.
+2. Repositorio, framework **Vite**, directorio raíz `frontend`, build `npm run build`, output `dist`.
 3. **Variables de entorno** (framework preset), con la URL final de la API:
    ```
    VITE_API_URL = https://greenlight-api-a487.onrender.com/api
+   VITE_BASE    = /
    ```
-4. **Save and Deploy**. Las rutas SPA (`/feed`, `/reportar`, `/admin`, etc.)
+4. **Save and Deploy**. Las rutas SPA (`/feed`, `/reportar`, `/sostenibilidad`, `/admin`, etc.)
    ya funcionan gracias al archivo `frontend/public/_redirects`.
 
 ## 4. Datos de prueba en producción
@@ -109,3 +168,22 @@ Usuarios: `coordinador@greenlight.test / Coordi123!`, `maria@greenlight.test` /
 
 Las colecciones `docs/GreenLight_Postman.json` y `docs/TaskFlow_Postman.json`
 cubren todos los endpoints. Solo edita `base_url` para apuntar a Render.
+
+## 6. Verificación posterior al despliegue
+
+```powershell
+# Salud y base de datos
+curl https://greenlight-api-a487.onrender.com/api/salud
+
+# Tablero de métricas de sostenibilidad
+curl https://greenlight-api-a487.onrender.com/api/sostenibilidad
+
+# El CORS debe devolver solo el origen del frontend
+curl -I -H "Origin: https://proweb26.github.io" https://greenlight-api-a487.onrender.com/api/salud
+
+# Frontend publicado
+curl -o NUL -w "%{http_code}" https://proweb26.github.io/GreenLight/
+```
+
+Tokens verificados contra producción: sin token / token basura / token alterado → **401**;
+usuario en endpoint de administrador → **403**; coordinador → **200**.

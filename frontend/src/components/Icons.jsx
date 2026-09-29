@@ -114,6 +114,34 @@ export function IconClipboard({ className }) {
   )
 }
 
+export function IconLeaf({ className }) {
+  return (
+    <Svg className={className}>
+      <path d="M11 20A7 7 0 0 1 4 13c0-6 7-9 16-9 0 9-3 16-9 16z" />
+      <path d="M4 21c2-6 6-9 11-11" />
+    </Svg>
+  )
+}
+
+export function IconShield({ className }) {
+  return (
+    <Svg className={className}>
+      <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" />
+      <path d="M9 12l2 2 4-4" />
+    </Svg>
+  )
+}
+
+export function IconServer({ className }) {
+  return (
+    <Svg className={className}>
+      <rect x="3" y="3" width="18" height="7" rx="1" />
+      <rect x="3" y="14" width="18" height="7" rx="1" />
+      <path d="M7 6.5h.01M7 17.5h.01" />
+    </Svg>
+  )
+}
+
 export function Logo() {
   return (
     <div className="flex items-center gap-3">

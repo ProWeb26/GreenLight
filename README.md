@@ -13,7 +13,7 @@ ambos como entregables de la materia.
 
 | Módulo             | Carpeta   | Stack                     | Tests |
 |--------------------|-----------|---------------------------|-------|
-| **GreenLight API** | `backend` | Flask + SQLAlchemy + JWT + Swagger | 41 ✓ |
+| **GreenLight API** | `backend` | Flask + SQLAlchemy + JWT + Swagger | 50 ✓ |
 | **TaskFlow API**   | `taskflow`| Flask + SQLAlchemy        | 19 ✓ |
 | **GreenLight Web** | `frontend`| React 19 + Vite + Tailwind + **Leaflet** | lint+build ✓ |
 | Mini Task Manager  | `mini-task-manager` | Node/Express + React (laboratorio) | 21 (Node) |
@@ -29,6 +29,31 @@ ambos como entregables de la materia.
 - Ruta `/mapa`: mapa con los focos con coordenadas (marcadores por estado, popups
   con detalle, filtro por tipo, capa opcional de comunidades).
 - En "Reportar" el marcador se coloca con un clic en el mapa o con "Usar mi ubicación".
+
+## Tablero de sostenibilidad (Fase 3 — Operación)
+
+- Ruta **`/sostenibilidad`**: tablero en vivo con el presupuesto de la consigna
+  frente a lo medido — peso del build, Lighthouse, uptime, latencia, costo,
+  licencias, ciclo de vida de los reportes y controles de seguridad.
+- `GET /api/sostenibilidad` (público): mismas métricas en JSON.
+- `npm run build` mide el bundle y escribe `dist/metricas-build.json`, que se
+  publica automáticamente en cada deploy de GitHub Pages.
+- `npm run auditar` adjunta el informe de Lighthouse (requiere Google Chrome).
+
+| Documento | Contenido |
+|-----------|-----------|
+| `docs/TABLERO_METRICAS.md` | Valores medidos y cómo regenerarlos |
+| `docs/PLAN_GOBERNANZA.md` | Roles, propiedad del dato, seguridad, riesgos y registro de decisiones |
+| `docs/PERFORMANCE_ACCESSIBILITY.md` | Presupuesto de rendimiento y criterios WCAG 2.1 AA |
+
+## Producción
+
+| Componente | URL |
+|------------|-----|
+| API (Render) | `https://greenlight-api-a487.onrender.com/api` |
+| Frontend (GitHub Pages) | `https://proweb26.github.io/GreenLight/` |
+| Swagger UI | `https://greenlight-api-a487.onrender.com/api/docs` |
+| Tablero | `https://proweb26.github.io/GreenLight/sostenibilidad` |
 
 ## Requisitos
 
@@ -69,7 +94,7 @@ npm run dev                    # http://localhost:5173
 ## Verificación
 
 ```powershell
-cd backend && python -m pytest        # 41 verdes
+cd backend && python -m pytest        # 50 verdes
 cd taskflow && python -m pytest       # 19 verdes
 cd frontend && npm run lint && npm run build
 ```
@@ -80,7 +105,6 @@ Con el backend corriendo, abre:
 
 - **Swagger UI**: `http://localhost:5000/api/docs`
 - Spec OpenAPI (YAML): `http://localhost:5000/api/openapi.yaml`
-
 ## Seguridad: JWT + RLS (Supabase)
 
 - Autenticación JWT (Bearer) con roles `usuario`/`coordinador`; errores 401
@@ -97,11 +121,13 @@ Con el backend corriendo, abre:
 
 ## Docs
 
-- `docs/DEPLOY_RENDER.md` — Render (gunicorn `wsgi:app`) + Supabase (RLS) + Cloudflare Pages.
+- `docs/DEPLOY_RENDER.md` — Render (gunicorn `wsgi:app`) + Supabase (RLS) + GitHub Pages / Cloudflare Pages, con el estado verificado del despliegue.
+- `docs/PLAN_GOBERNANZA.md` — plan de gobernanza: roles, propiedad y retención del dato, seguridad, riesgos y registro de decisiones.
+- `docs/TABLERO_METRICAS.md` — tablero de métricas de sostenibilidad con los valores medidos.
 - `docs/schema.sql` y `docs/schema_taskflow.sql` — esquemas PostgreSQL/Supabase.
 - `docs/GreenLight_Postman.json` y `docs/TaskFlow_Postman.json` — colecciones Postman.
 - `docs/TEST_CASES.md` y `docs/PERFORMANCE_ACCESSIBILITY.md` — pruebas y
-  presupuesto Lighthouse/WCAG (300–500 KB, ≥ 90).
+  presupuesto Lighthouse/WCAG (300–500 KB gzip, ≥ 90).
 
 ## Git — Ramas
 

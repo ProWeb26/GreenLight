@@ -3,7 +3,17 @@
 # En Render: New > Blueprint > seleccionar el repositorio > Apply.
 # Para usar Supabase: configura DATABASE_URL (Session pooler), SUPABASE_URL y
 # SUPABASE_KEY en cada servicio. Healthcheck: /api/salud.
-# El frontend también puede desplegarse en Cloudflare Pages (ver docs/DEPLOY_RENDER.md).
+#
+# La consigna pide el despliegue en Render o Cloudflare. Este blueprint deja
+# listo el camino de Render:
+#   greenlight-api  -> API Flask (ya desplegada y verificada)
+#   greenlight-web  -> frontend React como static site en Render
+#   taskflow-api    -> API complementaria del plan de pruebas Postman
+#   (mini-task-manager-api sigue comentado: es laboratorio de clase, no el MVP)
+#
+# El frontend también está publicado en GitHub Pages (deploy-pages.yml) como
+# segunda entrega; por eso CORS_ORIGINS del API incluye los dos orígenes.
+# Si publicas solo en uno, deja solo ese origen en CORS_ORIGINS.
 
 services:
   # ---------------------------------------------------------------------------
@@ -20,6 +30,8 @@ services:
     envVars:
       - key: SECRET_KEY
         generateValue: true
+      - key: APP_VERSION
+        value: "3.1.0"
       - key: JWT_EXPIRATION_MINUTES
         value: "120"
       - key: CONFIRMATION_THRESHOLD
@@ -30,8 +42,25 @@ services:
         sync: false
       - key: SUPABASE_KEY
         sync: false
+      # Orígenes permitidos: el static site de Render y GitHub Pages.
       - key: CORS_ORIGINS
-        value: "https://proweb26.github.io"
+        value: "https://greenlight-web.onrender.com,https://proweb26.github.io"
+
+  # ---------------------------------------------------------------------------
+  # Frontend GreenLight (React) como static site en Render.
+  # Es la opción que cumple literalmente "producción en Render". Alternativa
+  # equivalente en Cloudflare Pages documentada en docs/DEPLOY_RENDER.md §3.
+  # ---------------------------------------------------------------------------
+  - type: static_site
+    name: greenlight-web
+    runtime: static
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    publishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://greenlight-api-a487.onrender.com/api
 
   # ---------------------------------------------------------------------------
   # API complementaria: TaskFlow (Plan de Pruebas Postman)
@@ -49,35 +78,20 @@ services:
         sync: false
 
   # ---------------------------------------------------------------------------
-  # Frontend GreenLight (React). Opcional si prefieres Cloudflare Pages.
+  # API simulada: Mini Task Manager (Node.js / Express). Laboratorio de clase.
   # ---------------------------------------------------------------------------
-  - type: static_site
-    name: greenlight-web
-    runtime: static
-    plan: free
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    publishPath: dist
-    envVars:
-      # Apunta a la URL final del servicio greenlight-api en Render.
-      - key: VITE_API_URL
-        value: https://greenlight-api-a487.onrender.com/api
-
-  # ---------------------------------------------------------------------------
-  # API simulada: Mini Task Manager (Node.js / Express)
-  # ---------------------------------------------------------------------------
-  - type: web
-    name: mini-task-manager-api
-    runtime: node
-    plan: free
-    rootDir: mini-task-manager/backend
-    healthCheckPath: /api/health
-    buildCommand: npm install
-    startCommand: npm start
-    envVars:
-      - key: JWT_SECRET
-        generateValue: true
-      - key: JWT_EXPIRES_IN
-        value: "2h"
-      - key: TASK_STORE
-        value: memory
+  # - type: web
+  #   name: mini-task-manager-api
+  #   runtime: node
+  #   plan: free
+  #   rootDir: mini-task-manager/backend
+  #   healthCheckPath: /api/health
+  #   buildCommand: npm install
+  #   startCommand: npm start
+  #   envVars:
+  #     - key: JWT_SECRET
+  #       generateValue: true
+  #     - key: JWT_EXPIRES_IN
+  #       value: "2h"
+  #     - key: TASK_STORE
+  #       value: memory

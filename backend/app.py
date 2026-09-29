@@ -18,6 +18,7 @@ from routes_auth import auth_bp
 from routes_reportes import reportes_bp
 from routes_admin import admin_bp
 from routes_sync import sync_bp
+from routes_sostenibilidad import sostenibilidad_bp
 from rate_limit import limiter
 
 RUTA_BACKEND = os.path.dirname(os.path.abspath(__file__))
@@ -49,6 +50,7 @@ def create_app(config_object=None):
     app.register_blueprint(reportes_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(sync_bp)
+    app.register_blueprint(sostenibilidad_bp)
 
     swagger_ui_bp = get_swaggerui_blueprint(
         "/api/docs",
@@ -68,10 +70,11 @@ def create_app(config_object=None):
         return jsonify(
             {
                 "api": "GreenLight API",
-                "version": "3.0.3",
+                "version": app.config.get("APP_VERSION", "3.0.3"),
                 "documentacion": "/api/docs",
                 "espec": "/api/openapi.yaml",
                 "salud": "/api/salud",
+                "metricas": "/api/sostenibilidad",
                 "endpoints": ["/api/auth/*", "/api/reportes", "/api/feed"],
             }
         )
