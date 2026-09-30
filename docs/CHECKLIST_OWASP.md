@@ -29,8 +29,12 @@ JWT). Estado: listo / pendiente.
 - [x] Contraseñas almacenadas con hash (werkzeug `generate_password_hash`).
 - [x] Relaciones con `ondelete`/cascade seguras y unicidad de confirmaciones.
 - [x] RLS en la base (ver `backend/sql/01_esquema_y_rls.sql`).
-- [ ] (Pendiente) Rate limiting por IP/usuario — recomendado en producción.
-- [ ] (Pendiente) CORS restringido al origen del frontend desplegado.
+- [x] Rate limiting por IP: `Flask-Limiter` con 2000 req/h por defecto y 30/min
+      en login y registro (`backend/rate_limit.py`, `backend/routes_auth.py:12,19`);
+      se desactiva solo con `TESTING` (`backend/app.py:46`).
+- [x] CORS restringido al origen del frontend desplegado: `CORS_ORIGINS` en
+      `backend/config.py:28`, aplicado en `backend/app.py:42`; en producción vale
+      `https://proweb26.github.io`.
 
 ## Notas para pruebas de uso
 

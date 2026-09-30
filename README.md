@@ -38,7 +38,8 @@ ambos como entregables de la materia.
 - `GET /api/sostenibilidad` (público): mismas métricas en JSON.
 - `npm run build` mide el bundle y escribe `dist/metricas-build.json`, que se
   publica automáticamente en cada deploy de GitHub Pages.
-- `npm run auditar` adjunta el informe de Lighthouse (requiere Google Chrome).
+- `npm run auditar` corre Lighthouse sobre el build (detecta Chrome o Edge) y deja
+  el resumen en `public/lighthouse.json`. Última medición: **98 / 95 / 100 / 100**.
 
 | Documento | Contenido |
 |-----------|-----------|

@@ -1,0 +1,30 @@
+{
+  "fetchTime": "2026-09-30T04:25:04.323Z",
+  "lighthouseVersion": "13.5.0",
+  "requestedUrl": "http://localhost:4173/GreenLight/",
+  "categories": {
+    "performance": {
+      "score": 0.98
+    },
+    "accessibility": {
+      "score": 0.95
+    },
+    "best-practices": {
+      "score": 1
+    },
+    "seo": {
+      "score": 1
+    }
+  },
+  "audits": {
+    "largest-contentful-paint": {
+      "numericValue": 1853.5557999999996
+    },
+    "total-blocking-time": {
+      "numericValue": 0
+    },
+    "cumulative-layout-shift": {
+      "numericValue": 0.0025273790309443198
+    }
+  }
+}

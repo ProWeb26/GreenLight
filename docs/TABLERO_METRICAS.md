@@ -16,39 +16,48 @@ Complementa a `docs/PERFORMANCE_ACCESSIBILITY.md` (presupuesto y WCAG) y
 
 ## 1. Presupuesto de la consigna frente a lo medido
 
-Medición tomada el **29/09/2026** sobre el build de producción
+Medición tomada el **30/09/2026** sobre el build de producción
 (`VITE_BASE=/GreenLight/`, `VITE_API_URL=https://greenlight-api-a487.onrender.com/api`).
 
 | Indicador | Presupuesto | Medido | Cumplimiento |
 |-----------|:-----------:|:------:|:------------:|
-| Peso total servido (gzip) | ≤ 500 kB | **156.79 kB** | ✅ 31 % del presupuesto |
-| Carga inicial (gzip) | ≤ 500 kB | **96.72 kB** | ✅ 19 % del presupuesto |
-| Lighthouse Performance | ≥ 90 | *sin auditar* | ⚠️ pendiente |
-| Lighthouse Accessibility | ≥ 90 | *sin auditar* | ⚠️ pendiente |
-| Lighthouse Best Practices | ≥ 90 | *sin auditar* | ⚠️ pendiente |
-| Lighthouse SEO | ≥ 90 | *sin auditar* | ⚠️ pendiente |
+| Peso total servido (gzip) | ≤ 500 kB | **157.41 kB** | ✅ 31 % del presupuesto |
+| Carga inicial (gzip) | ≤ 500 kB | **96.75 kB** | ✅ 19 % del presupuesto |
+| Lighthouse Performance | ≥ 90 | **98** | ✅ |
+| Lighthouse Accessibility | ≥ 90 | **95** | ✅ |
+| Lighthouse Best Practices | ≥ 90 | **100** | ✅ |
+| Lighthouse SEO | ≥ 90 | **100** | ✅ |
+| LCP | ≤ 2.5 s | **1.85 s** | ✅ |
+| TBT | ≤ 200 ms | **0 ms** | ✅ |
+| CLS | ≤ 0.1 | **0.003** | ✅ |
 | WCAG 2.1 | Nivel AA | documentado | ✅ `PERFORMANCE_ACCESSIBILITY.md` §2 |
 | Costo de infraestructura | 0 Bs | **0 Bs** | ✅ |
 | Licencias propietarias | 0 | **0** | ✅ MIT / BSD / PostgreSQL |
+
+Las cuatro categorías se midieron con Lighthouse 13.5.0 sobre el build de producción,
+sirviéndolo con `vite preview` y Chrome/Edge headless. El informe completo se queda
+en `frontend/lighthouse-report.json` (≈400 kB, fuera del repo) y al tablero solo llega
+el resumen `frontend/public/lighthouse.json`, que `npm run build` incrusta en
+`dist/metricas-build.json`.
 
 ### Criterio de medición
 
 El presupuesto de **300–500 kB** se evalúa sobre **gzip**, que es lo que el
 vecino descarga realmente por su red móvil; el peso bruto se reporta también para
 no ocultar el dato. Es la decisión #7 del registro de gobernanza. Con gzip, el
-sitio completo pesa un tercio de lo permitido; sin comprimir serían 508 kB, apenas
+sitio completo pesa un tercio de lo permitido; sin comprimir serían 509 kB, apenas
 por encima del techo de 500 kB.
 
 ### Desglose del build (gzip)
 
 | Archivo | gzip | Nota |
 |---------|-----:|------|
-| `index-*.js` (vendor + app) | 85.17 kB | React 19, router, iconos SVG inline |
-| `mapa-*.js` | 42.59 kB | Leaflet, **cargado solo en `/mapa`** |
+| `index-*.js` (vendor + app) | 85.20 kB | React 19, router, iconos SVG inline |
+| `mapa-*.js` | 42.86 kB | Leaflet, **cargado solo en `/mapa`** |
 | `index-*.css` | 10.99 kB | Tailwind v4, solo utilidades usadas |
-| `Sostenibilidad-*.js` | 3.19 kB | este tablero |
+| `Sostenibilidad-*.js` | 3.20 kB | este tablero |
 | resto (8 chunks de ruta) | ~13 kB | `React.lazy` por página |
-| HTML + iconos + favicon | ~5 kB | — |
+| HTML + iconos + favicon + resumen Lighthouse | ~5 kB | — |
 
 La decisión que sostiene este número es el **code-splitting por ruta**
 (`React.lazy` en `frontend/src/App.jsx:7-11`): un vecino que solo lee el feed
@@ -56,18 +65,21 @@ nunca descarga Leaflet ni el panel de administración.
 
 ### Cómo auditar Lighthouse
 
-Lighthouse necesita Google Chrome, que no está disponible en el entorno donde se
-generó esta medición. Cuando Chrome esté instalado:
+`npm run auditar` no necesita instalar nada a mano: levanta `vite preview`, espera
+a que responda y corre Lighthouse. Detecta **Google Chrome o Microsoft Edge**
+(usa `CHROME_PATH` si está definido) y aplica la misma `VITE_BASE` del build, porque
+si el preview se levanta con otra base devuelve `index.html` en vez de los assets y
+la auditoría aborta con `NO_FCP` sin explicar la causa.
 
 ```powershell
 cd frontend
-npm run build
-npm run auditar        # levanta vite preview, corre lighthouse, deja public/lighthouse.json
-npm run build          # vuelve a volcar las métricas con el informe incluido
+npm run build                              # con VITE_BASE=/GreenLight/
+npm run auditar                            # Lighthouse -> public/lighthouse.json
+npm run build                              # vuelve a volcar las métricas al tablero
 ```
 
-`dist/metricas-build.json` lee `public/lighthouse.json` si existe y el tablero
-muestra las cuatro categorías con semáforo. Sin ese archivo, el tablero lo dice
+`dist/metricas-build.json` lee `public/lighthouse.json` y el tablero muestra las
+cuatro categorías con semáforo. Si el archivo no existe, el tablero lo dice
 explícitamente en vez de mostrar un 0.
 
 ---
@@ -121,8 +133,7 @@ es el indicador de sostenibilidad *ambiental* más directo, y el tablero de
 |---------|------------------|
 | Regenerar el peso tras tocar el frontend | `npm run build` (en `frontend/`) |
 | Ver solo el peso, sin reconstruir | `npm run medir` |
-| Adjuntar Lighthouse | `npm run auditar` y luego `npm run build` |
-| Publicar el tablero | `git push` → `.github/workflows/deploy-pages.yml` dispara solo |
+| Adjuntar Lighthouse | `npm run auditar` y luego `npm run build` || Publicar el tablero | `git push` → `.github/workflows/deploy-pages.yml` dispara solo |
 | Verificar el backend en producción | `curl https://greenlight-api-a487.onrender.com/api/sostenibilidad` |
 | Regenerar datos de ejemplo | `cd backend && python seed.py` |
 

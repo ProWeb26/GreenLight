@@ -12,20 +12,20 @@ presupuesto de transferencia de **300–500 KB** y un **Lighthouse ≥ 90**.
 
 | Métrica      | Presupuesto | Estado    |
 |-------------:|:-----------:|:---------:|
-| Performance  | ≥ 90        | sin auditar |
-| LCP          | ≤ 2.5 s     | sin auditar |
-| TBT          | ≤ 200 ms    | sin auditar |
-| CLS          | ≤ 0.1       | sin auditar |
-| Peso total servido (gzip) | 300–500 KB | ✅ **156.79 kB** |
-| Carga inicial (gzip)      | —           | ✅ 96.72 kB |
-| Peso total servido (bruto)| —           | 508.01 kB |
+| Performance  | ≥ 90        | ✅ **98** |
+| LCP          | ≤ 2.5 s     | ✅ **1.85 s** |
+| TBT          | ≤ 200 ms    | ✅ **0 ms** |
+| CLS          | ≤ 0.1       | ✅ **0.003** |
+| Peso total servido (gzip) | 300–500 KB | ✅ **157.41 kB** |
+| Carga inicial (gzip)      | —           | ✅ 96.75 kB |
+| Peso total servido (bruto)| —           | 509.21 kB |
 
 > El presupuesto se evalúa sobre **gzip** (lo que el usuario descarga por su red
-> móvil). Con bruto, el sitio completo pesaría 508 kB, apenas sobre el techo de
+> móvil). Con bruto, el sitio completo pesaría 509 kB, apenas sobre el techo de
 > 500 kB. Decisión #7 en el registro de `PLAN_GOBERNANZA.md`.
 
-Medición del 29/09/2026 con `npm run build`, que escribe `dist/metricas-build.json`
-con el desglose archivo por archivo.
+Medición del 30/09/2026 con `npm run build`, que escribe `dist/metricas-build.json`
+con el desglose archivo por archivo, y `npm run auditar` para Lighthouse.
 
 ### Decisiones implementadas
 
@@ -48,13 +48,13 @@ con el desglose archivo por archivo.
 cd frontend
 npm run build                              # construye y escribe dist/metricas-build.json
 npm run medir                              # solo vuelve a medir dist/
-npm run auditar                            # Lighthouse (requiere Google Chrome)
-npx -y lighthouse http://localhost:4173 --chrome-flags="--headless" --output=html --output-path=audit.html --quiet
+npm run auditar                            # Lighthouse (detecta Chrome o Edge)
 ```
 
-`npm run auditar` deja el informe en `frontend/public/lighthouse.json`; el siguiente
-`npm run build` lo incrusta en `dist/metricas-build.json` y el tablero lo muestra.
-Audita también `vite build` y revisa el gzip de `dist/`.
+`npm run auditar` deja el resumen en `frontend/public/lighthouse.json` y el informe
+completo en `frontend/lighthouse-report.json` (no se publica: pesa ≈400 kB); el
+siguiente `npm run build` lo incrusta en `dist/metricas-build.json` y el tablero lo
+muestra. Audita también `vite build` y revisa el gzip de `dist/`.
 
 ## 2. Accesibilidad (WCAG 2.1 AA)
 
@@ -75,8 +75,8 @@ Audita también `vite build` y revisa el gzip de `dist/`.
 
 - [x] `python -m pytest` pasa en `backend/` (50) y en `taskflow/` (19).
 - [x] `npm run lint` y `npm run build` pasan en `frontend/` sin errores.
-- [x] Bundle gzip < 300 KB (156.79 kB) y `dist/metricas-build.json` publicado.
-- [ ] Lighthouse ≥ 90 en las cuatro categorías — **requiere Google Chrome**; correr `npm run auditar`.
+- [x] Bundle gzip < 300 KB (157.41 kB) y `dist/metricas-build.json` publicado.
+- [x] Lighthouse ≥ 90 en las cuatro categorías — 98 / 95 / 100 / 100 (`npm run auditar`).
 - [x] Navegación completa con teclado (Tab / Enter) en `/login`, `/feed`, `/reportar`.
 - [x] Formularios de login/reporte muestran errores por campo anunciados por lectores.
 - [x] Ningún estado se comunica solo con color (badges con texto: Activo, Confirmado…).

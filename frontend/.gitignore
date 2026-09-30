@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Informe completo de Lighthouse: pesa ~400 kB y no se publica.
+# El resumen que lee el tablero es public/lighthouse.json y si se versiona.
+lighthouse-report.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
