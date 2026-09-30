@@ -28,6 +28,20 @@ export function crearIconoFoco(estado) {
   })
 }
 
+export function crearIconoUbicacion() {
+  return L.divIcon({
+    className: '',
+    iconSize: [30, 40],
+    iconAnchor: [15, 40],
+    html: `<svg width="30" height="40" viewBox="0 0 30 40" style="filter:drop-shadow(0 3px 3px rgba(0,0,0,0.45))">
+<path d="M15 0C6.72 0 0 6.72 0 15c0 10.6 15 25 15 25s15-14.4 15-25C30 6.72 23.28 0 15 0z" fill="#EA4335" stroke="#8c1d18" stroke-width="1.5"/>
+<circle cx="15" cy="14.5" r="6.2" fill="#7f1d1d"/>
+<circle cx="15" cy="14.5" r="3.4" fill="#EA4335"/>
+<ellipse cx="10" cy="8" rx="4" ry="5.5" fill="#ffffff" opacity="0.35"/>
+</svg>`,
+  })
+}
+
 export function crearIconoComunidad() {
   return L.divIcon({
     className: '',

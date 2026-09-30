@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
-import { CENTRO, TILE_LAYER } from '../lib/mapa.js'
+import { CENTRO, TILE_LAYER, crearIconoUbicacion } from '../lib/mapa.js'
 
 function MapaLugar({ latitud, longitud, onChange }) {
   const contenedor = useRef(null)
@@ -15,7 +15,7 @@ function MapaLugar({ latitud, longitud, onChange }) {
   const ponerMarcador = (lat, lon, centrar = false) => {
     if (!mapaRef.current || !Number.isFinite(lat) || !Number.isFinite(lon)) return
     if (!marcadorRef.current) {
-      marcadorRef.current = L.marker([lat, lon], { draggable: true })
+      marcadorRef.current = L.marker([lat, lon], { draggable: true, icon: crearIconoUbicacion() })
       marcadorRef.current.on('dragend', () => {
         const pos = marcadorRef.current.getLatLng()
         onChangeRef.current(pos.lat, pos.lng)
